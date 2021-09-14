@@ -2,6 +2,7 @@ package com.khoben.sheetselection
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.khoben.sheetselection.databinding.RowSelectionItemBinding
@@ -32,7 +33,9 @@ class SheetSelectionAdapter(
     private var recyclerView: EmptyRecyclerView? = null
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
-        if (recyclerView is EmptyRecyclerView) this.recyclerView = recyclerView
+        if (recyclerView is EmptyRecyclerView) {
+            this.recyclerView = recyclerView
+        }
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
@@ -42,20 +45,20 @@ class SheetSelectionAdapter(
 
     fun search(keyword: String?) {
         if (keyword.isNullOrBlank()) {
-            recyclerView?.isEmpty(false)
-            updateItems(source)
+            submitList(source)
+            recyclerView?.setEmptyState(false)
         } else {
             val searchResult = source.filter { it.value.contains(keyword, true) }
-            recyclerView?.isEmpty(searchResult.isEmpty())
-            updateItems(searchResult)
+            submitList(searchResult)
+            recyclerView?.setEmptyState(searchResult.isEmpty())
         }
     }
 
-    private fun updateItems(newList: List<SheetSelectionItem>) {
+    private fun submitList(newList: List<SheetSelectionItem>) {
         val diffResult: DiffUtil.DiffResult =
             DiffUtil.calculateDiff(SelectionDiffCallback(currentList, newList), false)
-        diffResult.dispatchUpdatesTo(this)
         this.currentList = newList
+        diffResult.dispatchUpdatesTo(this)
     }
 
     class ItemViewHolder(
@@ -66,20 +69,26 @@ class SheetSelectionAdapter(
             item: SheetSelectionItem,
             onItemSelectedListener: OnSheetItemClickListener?
         ) {
-            val selectedIcon = if (item.isChecked) R.drawable.ic_check else 0
-            binding.textViewItem.setCompoundDrawablesWithIntrinsicBounds(
-                item.icon ?: 0, 0, selectedIcon, 0
-            )
-
-            // set checkmark color tint
-            binding.textViewItem.compoundDrawables[2]?.setTint(
-                Utils.getColor(
-                    itemView.context,
-                    R.attr.colorPrimary
-                )
-            )
-
             binding.textViewItem.text = item.value
+            val leftDrawable = if (item.icon != null)
+                ContextCompat.getDrawable(
+                    itemView.context,
+                    item.icon
+                ) else null
+            val rightDrawable = if (item.isChecked)
+                ContextCompat.getDrawable(
+                    itemView.context,
+                    R.drawable.ic_check
+                )?.apply {
+                    setTint(Utils.getColor(itemView.context, R.attr.colorPrimary))
+                } else null
+
+            binding.textViewItem.setCompoundDrawablesWithIntrinsicBounds(
+                leftDrawable,
+                null,
+                rightDrawable,
+                null
+            )
 
             binding.textViewItem.setOnClickListener {
                 onItemSelectedListener?.onSheetItemClicked(item, adapterPosition)

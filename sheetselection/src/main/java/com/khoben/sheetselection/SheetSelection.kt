@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
@@ -25,7 +24,7 @@ import kotlin.math.roundToInt
 class SheetSelection : BottomSheetDialogFragment() {
 
     private lateinit var items: List<SheetSelectionItem>
-    private lateinit var adapter: SheetSelectionAdapter
+    private lateinit var selectionAdapter: SheetSelectionAdapter
 
     private var sheetSelectionTag: String? = null
     private var listener: SheetSelectionListener? = null
@@ -35,12 +34,6 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     private var isSearchableState: Boolean = false
     private var previousSheetState: Int = STATE_COLLAPSED
-    private var previousLayoutHeight: Int = WRAP_CONTENT
-
-    private fun screenHeight(): Int {
-        val metrics = requireContext().resources.displayMetrics
-        return metrics.heightPixels
-    }
 
     override fun getTheme(): Int = arguments?.getInt(ARGS_THEME) ?: super.getTheme()
 
@@ -151,13 +144,10 @@ class SheetSelection : BottomSheetDialogFragment() {
             binding.recyclerViewSelectionItems.adapter = SheetSelectionAdapter(
                 source = items,
                 onItemSelectedListener = onItemSelectedListener
-            ).also { adapter = it }
+            ).also { selectionAdapter = it }
             binding.recyclerViewSelectionItems.itemAnimator = null
-            binding.recyclerViewSelectionItems.setHasFixedSize(true)
-
             binding.recyclerViewSelectionItems.setEmptyView(binding.recyclerViewSelectionEmpty.apply {
-                findViewById<TextView>(R.id.recyclerViewSelectionEmpty).text =
-                    args.getString(ARGS_SEARCH_NOT_FOUND_TEXT) ?: getString(R.string.not_found)
+                text = args.getString(ARGS_SEARCH_NOT_FOUND_TEXT) ?: getString(R.string.not_found)
             })
         }
     }
@@ -168,7 +158,7 @@ class SheetSelection : BottomSheetDialogFragment() {
         if (context is SheetSelectionListener && sheetSelectionTag != null) {
             listener = context
         } else {
-            throw RuntimeException("$context should implement 'SheetSelectionListener' and tag(String) should be set")
+            throw RuntimeException("$context should implement SheetSelectionListener interface")
         }
     }
 
@@ -177,11 +167,8 @@ class SheetSelection : BottomSheetDialogFragment() {
         listener = null
     }
 
-    private fun updateSheetHeight(viewHeight: Int): Int {
-        val savedHeight = binding.root.layoutParams.height
-        binding.root.layoutParams = binding.root.layoutParams
-            .apply { height = viewHeight }
-        return savedHeight
+    private fun updateSheetHeight(viewHeight: Int) {
+        (binding.root.parent as View).updateLayoutParams { height = viewHeight }
     }
 
     private val onItemSelectedListener = object : OnSheetItemClickListener {
@@ -192,7 +179,7 @@ class SheetSelection : BottomSheetDialogFragment() {
         ) {
             if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, false) == true) {
                 clickedItem.isChecked = clickedItem.isChecked.not()
-                adapter.notifyItemChanged(adapterPosition)
+                selectionAdapter.notifyItemChanged(adapterPosition)
             } else {
                 items.forEach { selectionItem ->
                     selectionItem.isChecked = false
@@ -213,7 +200,7 @@ class SheetSelection : BottomSheetDialogFragment() {
     }
 
     private fun enterSearchViewState() {
-        forceExpand()
+        searchableBottomSheetState()
         toggleSearchState(true)
     }
 
@@ -222,19 +209,25 @@ class SheetSelection : BottomSheetDialogFragment() {
         restoreBottomSheetState()
     }
 
-    private fun forceExpand() {
+    private fun searchableBottomSheetState() {
+        updateSheetHeight(MATCH_PARENT)
         (dialog as? BottomSheetDialog)?.apply {
             previousSheetState = behavior.state
             behavior.state = STATE_EXPANDED
         }
-        previousLayoutHeight = updateSheetHeight(MATCH_PARENT)
     }
 
     private fun restoreBottomSheetState() {
+        /**
+         * TODO: Ugly collapse animation:
+         * If the size of the content doesn't allow it to stretch to the peekHeight,
+         * and when it collapsing,
+         * firstly, it goes to the peak and next to the size of the content.
+         */
+        updateSheetHeight(WRAP_CONTENT)
         (dialog as? BottomSheetDialog)?.apply {
             behavior.state = previousSheetState
         }
-        updateSheetHeight(previousLayoutHeight)
     }
 
     private fun toggleSearchState(isSearchable: Boolean) {
@@ -253,12 +246,12 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     private val onSearchQueryTextListener = object : SearchView.OnQueryTextListener {
         override fun onQueryTextChange(newText: String?): Boolean {
-            adapter.search(newText)
+            selectionAdapter.search(newText)
             return true
         }
 
         override fun onQueryTextSubmit(query: String?): Boolean {
-            adapter.search(query)
+            selectionAdapter.search(query)
             return true
         }
     }
@@ -275,7 +268,6 @@ class SheetSelection : BottomSheetDialogFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(STATE_PREV_STATE, previousSheetState)
-        outState.putInt(STATE_PREV_HEIGHT, previousLayoutHeight)
         outState.putBoolean(STATE_SEARCH, isSearchableState)
     }
 
@@ -283,7 +275,6 @@ class SheetSelection : BottomSheetDialogFragment() {
         super.onViewStateRestored(savedInstanceState)
         savedInstanceState?.let { savedState ->
             previousSheetState = savedState.getInt(STATE_PREV_STATE)
-            previousLayoutHeight = savedState.getInt(STATE_PREV_HEIGHT)
             if (savedState.getBoolean(STATE_SEARCH)) {
                 enterSearchViewState()
             }
@@ -380,12 +371,11 @@ class SheetSelection : BottomSheetDialogFragment() {
             "SheetSelection:ARGS_SHOW_CLOSE_BTN"
         private const val ARGS_TAG = "SheetSelection:ARGS_TAG"
 
-        private const val STATE_PREV_HEIGHT = "STATE:PREV_HEIGHT"
         private const val STATE_PREV_STATE = "STATE:PREV_STATE"
         private const val STATE_SEARCH = "STATE:SEARCH"
 
         private const val STICKY_BOTTOM_DISAPPEARING_ACCELERATE = 6
         private const val PEEK_HEIGHT_AUTO_RATIO_THRESHOLD = 1.1f
-        private const val WIDE_SCREEN_PEEK_HEIGHT_RATIO = 0.6f
+        private const val WIDE_SCREEN_PEEK_HEIGHT_RATIO = 0.85f
     }
 }

@@ -13,13 +13,11 @@ class EmptyRecyclerView @JvmOverloads constructor(
 
     private var emptyView: View? = null
 
-
-
     fun setEmptyView(emptyView: View) {
         this.emptyView = emptyView
     }
 
-    fun isEmpty(isEmpty: Boolean) {
+    fun setEmptyState(isEmpty: Boolean) {
         if (isEmpty) {
             this.visibility = View.INVISIBLE
             emptyView?.visibility = View.VISIBLE

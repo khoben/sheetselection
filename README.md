@@ -8,7 +8,7 @@
 3. and more little changes...
 
 ## How to use
-### [Sample app](app\src\main\java\com\khoben\sheetselection\sample\MainActivity.kt)
+### [Sample app](app/src/main/java/com/khoben/sheetselection/sample/MainActivity.kt)
 
 ## Screenshots
 <table>

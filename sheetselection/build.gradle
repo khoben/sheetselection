@@ -4,8 +4,6 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'maven-publish'
 
-group = 'com.khoben.sheetselection'
-
 android {
     compileSdkVersion 31
     buildToolsVersion "31.0.0"
@@ -37,7 +35,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.khoben'
                 artifactId = 'sheetselection'
-                version = '1.0.0'
+                version = '1.0.1'
             }
         }
     }
