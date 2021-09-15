@@ -94,6 +94,8 @@ class SheetSelection : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         arguments?.let { args ->
 
+            sheetSelectionTag = arguments?.getString(ARGS_TAG)
+
             items = args.getParcelableArrayList(ARGS_ITEMS)!!
 
             if (args.getBoolean(ARGS_SHOW_DRAGGED_INDICATOR)) {
@@ -154,8 +156,7 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        sheetSelectionTag = arguments?.getString(ARGS_TAG)
-        if (context is SheetSelectionListener && sheetSelectionTag != null) {
+        if (context is SheetSelectionListener) {
             listener = context
         } else {
             throw RuntimeException("$context should implement SheetSelectionListener interface")
@@ -200,7 +201,7 @@ class SheetSelection : BottomSheetDialogFragment() {
     }
 
     private fun enterSearchViewState() {
-        searchableBottomSheetState()
+        toSearchableBottomSheetState()
         toggleSearchState(true)
     }
 
@@ -209,7 +210,7 @@ class SheetSelection : BottomSheetDialogFragment() {
         restoreBottomSheetState()
     }
 
-    private fun searchableBottomSheetState() {
+    private fun toSearchableBottomSheetState() {
         updateSheetHeight(MATCH_PARENT)
         (dialog as? BottomSheetDialog)?.apply {
             previousSheetState = behavior.state
@@ -226,8 +227,17 @@ class SheetSelection : BottomSheetDialogFragment() {
          */
         updateSheetHeight(WRAP_CONTENT)
         (dialog as? BottomSheetDialog)?.apply {
-            behavior.state = previousSheetState
+            behavior.state = getStableSheetBehaviourState(previousSheetState)
         }
+    }
+
+    /**
+     * Returns only stable state with fallback to [STATE_COLLAPSED]
+     */
+    private fun getStableSheetBehaviourState(state: Int): Int {
+        if (state == STATE_SETTLING || state == STATE_DRAGGING)
+            return STATE_COLLAPSED
+        return state
     }
 
     private fun toggleSearchState(isSearchable: Boolean) {
@@ -239,8 +249,8 @@ class SheetSelection : BottomSheetDialogFragment() {
             binding.searchView.setQuery("", false)
             binding.viewSwitcherHeader.displayedChild = 0
         }
-        with(from(binding.root.parent as View)) {
-            isDraggable = !isSearchable
+        (dialog as? BottomSheetDialog)?.apply {
+            behavior.isDraggable = !isSearchable
         }
     }
 
