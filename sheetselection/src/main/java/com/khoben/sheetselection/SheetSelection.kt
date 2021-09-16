@@ -9,10 +9,12 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
+import androidx.annotation.IntDef
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.*
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -151,7 +153,30 @@ class SheetSelection : BottomSheetDialogFragment() {
             binding.recyclerViewSelectionItems.setEmptyView(binding.recyclerViewSelectionEmpty.apply {
                 text = args.getString(ARGS_SEARCH_NOT_FOUND_TEXT) ?: getString(R.string.not_found)
             })
+
+            if (args.getBoolean(ARGS_SHOW_RESET_BTN)) {
+                val resetMode = args.getInt(ARGS_SHOW_RESET_MODE)
+                binding.buttonReset.visibility = View.VISIBLE
+                updateResetButtonState(resetMode)
+                binding.buttonReset.setOnClickListener {
+                    selectionAdapter.resetCheckedStates(resetMode == ResetMode.SELECT_ALL)
+                }
+                selectionAdapter.registerAdapterDataObserver(object :
+                    RecyclerView.AdapterDataObserver() {
+                    override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+                        super.onItemRangeChanged(positionStart, itemCount)
+                        updateResetButtonState(resetMode)
+                    }
+                })
+            }
         }
+    }
+
+    private fun updateResetButtonState(@ResetMode resetMode: Int) {
+        val checkedCount = items.count { it.isChecked }
+        binding.buttonReset.isEnabled =
+            !((checkedCount == selectionAdapter.itemCount && resetMode == ResetMode.SELECT_ALL) ||
+                    (checkedCount == 0 && resetMode == ResetMode.NO_SELECTION))
     }
 
     override fun onAttach(context: Context) {
@@ -179,7 +204,7 @@ class SheetSelection : BottomSheetDialogFragment() {
             tag: String?
         ) {
             if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, false) == true) {
-                clickedItem.isChecked = clickedItem.isChecked.not()
+                clickedItem.isChecked = !clickedItem.isChecked
                 selectionAdapter.notifyItemChanged(adapterPosition)
             } else {
                 items.forEach { selectionItem ->
@@ -302,6 +327,10 @@ class SheetSelection : BottomSheetDialogFragment() {
         private var searchNotFoundText: String? = null
         private var applyButtonText: String? = null
         private var showCloseButton: Boolean = false
+        private var showResetButton: Boolean = false
+
+        @ResetMode
+        private var resetMode: Int = ResetMode.NO_SELECTION
 
         fun theme(@StyleRes themeId: Int) = apply {
             this.themeId = themeId
@@ -344,6 +373,14 @@ class SheetSelection : BottomSheetDialogFragment() {
             this.showCloseButton = showCloseButton
         }
 
+        fun showResetButton(
+            showResetButton: Boolean,
+            @ResetMode resetMode: Int = ResetMode.NO_SELECTION
+        ) = apply {
+            this.showResetButton = showResetButton
+            this.resetMode = resetMode
+        }
+
         fun build() = SheetSelection().apply {
             arguments = Bundle()
                 .apply {
@@ -356,12 +393,26 @@ class SheetSelection : BottomSheetDialogFragment() {
                     putBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, multipleSelectionEnabled)
                     putString(ARGS_APPLY_BUTTON_TEXT, applyButtonText)
                     putBoolean(ARGS_SHOW_CLOSE_BTN, showCloseButton)
+                    putBoolean(ARGS_SHOW_RESET_BTN, showResetButton)
+                    putInt(ARGS_SHOW_RESET_MODE, resetMode)
                     putString(ARGS_TAG, this@Builder.tag)
                 }
         }
 
         fun show(manager: FragmentManager) {
             build().show(manager, TAG)
+        }
+    }
+
+    @IntDef(
+        ResetMode.SELECT_ALL,
+        ResetMode.NO_SELECTION
+    )
+    @Retention(AnnotationRetention.SOURCE)
+    annotation class ResetMode {
+        companion object {
+            const val SELECT_ALL = 0
+            const val NO_SELECTION = 1
         }
     }
 
@@ -379,6 +430,10 @@ class SheetSelection : BottomSheetDialogFragment() {
             "SheetSelection:ARGS_APPLY_BUTTON_TEXT"
         private const val ARGS_SHOW_CLOSE_BTN =
             "SheetSelection:ARGS_SHOW_CLOSE_BTN"
+        private const val ARGS_SHOW_RESET_BTN =
+            "SheetSelection:ARGS_SHOW_RESET_BTN"
+        private const val ARGS_SHOW_RESET_MODE =
+            "SheetSelection:ARGS_SHOW_RESET_MODE"
         private const val ARGS_TAG = "SheetSelection:ARGS_TAG"
 
         private const val STATE_PREV_STATE = "STATE:PREV_STATE"

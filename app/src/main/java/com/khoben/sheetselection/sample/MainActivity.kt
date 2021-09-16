@@ -19,13 +19,14 @@ class MainActivity : AppCompatActivity(), SheetSelectionListener {
         binding.content.showbs.setOnClickListener {
             SheetSelection.Builder("SAMPLE")
                 .title("Sheet Selection")
-                .enableMultiSelection(true)
-                .showCloseButton(true)
                 .items(
                     List(25) { SheetSelectionItem("$it", "#$it") }
                 )
+                .enableMultiSelection(true)
                 .showDraggedIndicator(true)
                 .searchEnabled(true)
+                .showCloseButton(true)
+                .showResetButton(true, SheetSelection.ResetMode.SELECT_ALL)
                 .searchNotFoundText("Nothing!!")
                 .show(supportFragmentManager)
         }

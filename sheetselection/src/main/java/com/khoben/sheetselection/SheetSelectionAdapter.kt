@@ -45,16 +45,25 @@ class SheetSelectionAdapter(
 
     fun search(keyword: String?) {
         if (keyword.isNullOrBlank()) {
-            submitList(source)
+            internalUpdate(source)
             recyclerView?.setEmptyState(false)
         } else {
             val searchResult = source.filter { it.value.contains(keyword, true) }
-            submitList(searchResult)
+            internalUpdate(searchResult)
             recyclerView?.setEmptyState(searchResult.isEmpty())
         }
     }
 
-    private fun submitList(newList: List<SheetSelectionItem>) {
+    fun resetCheckedStates(state: Boolean) {
+        currentList.forEachIndexed { index, it ->
+            if (it.isChecked != state) {
+                it.isChecked = state
+                notifyItemChanged(index)
+            }
+        }
+    }
+
+    private fun internalUpdate(newList: List<SheetSelectionItem>) {
         val diffResult: DiffUtil.DiffResult =
             DiffUtil.calculateDiff(SelectionDiffCallback(currentList, newList), false)
         this.currentList = newList

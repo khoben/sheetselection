@@ -35,7 +35,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.khoben'
                 artifactId = 'sheetselection'
-                version = '1.0.2'
+                version = '1.0.3'
             }
         }
     }
