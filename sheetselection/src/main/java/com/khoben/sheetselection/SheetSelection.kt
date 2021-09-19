@@ -156,10 +156,15 @@ class SheetSelection : BottomSheetDialogFragment() {
 
             if (args.getBoolean(ARGS_SHOW_RESET_BTN)) {
                 val resetMode = args.getInt(ARGS_SHOW_RESET_MODE)
+                if (resetMode == ResetMode.SELECT_ALL &&
+                    !args.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED)
+                ) {
+                    throw IllegalArgumentException("ResetMode.SELECT_ALL is not compatible with single selection mode")
+                }
                 binding.buttonReset.visibility = View.VISIBLE
                 updateResetButtonState(resetMode)
                 binding.buttonReset.setOnClickListener {
-                    selectionAdapter.resetCheckedStates(resetMode == ResetMode.SELECT_ALL)
+                    selectionAdapter.resetCheckedStates(resetMode)
                 }
                 selectionAdapter.registerAdapterDataObserver(object :
                     RecyclerView.AdapterDataObserver() {

@@ -54,10 +54,11 @@ class SheetSelectionAdapter(
         }
     }
 
-    fun resetCheckedStates(state: Boolean) {
+    fun resetCheckedStates(@SheetSelection.ResetMode state: Int) {
+        val defaultCheckedState = (state == SheetSelection.ResetMode.SELECT_ALL)
         currentList.forEachIndexed { index, it ->
-            if (it.isChecked != state) {
-                it.isChecked = state
+            if (it.isChecked != defaultCheckedState) {
+                it.isChecked = defaultCheckedState
                 notifyItemChanged(index)
             }
         }
