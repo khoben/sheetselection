@@ -3,16 +3,16 @@ package com.khoben.sheetselection
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 
-fun AppCompatActivity.createSheetSelection(
+inline fun AppCompatActivity.showSheetSelection(
     sheetSelectionTag: String,
-    builder: SheetSelection.Builder.() -> SheetSelection.Builder
+    crossinline block: SheetSelection.Builder.() -> Unit
 ) {
-    SheetSelection.Builder(sheetSelectionTag).builder().show(supportFragmentManager)
+    SheetSelection.Builder(sheetSelectionTag).apply(block).show(supportFragmentManager)
 }
 
-fun Fragment.createSheetSelection(
+inline fun Fragment.showSheetSelection(
     sheetSelectionTag: String,
-    builder: SheetSelection.Builder.() -> SheetSelection.Builder
+    crossinline block: SheetSelection.Builder.() -> Unit
 ) {
-    SheetSelection.Builder(sheetSelectionTag).builder().show(childFragmentManager)
+    SheetSelection.Builder(sheetSelectionTag).apply(block).show(childFragmentManager)
 }

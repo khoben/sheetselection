@@ -6,8 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.khoben.sheetselection.SheetSelection
 import com.khoben.sheetselection.SheetSelectionItem
 import com.khoben.sheetselection.SheetSelectionListener
-import com.khoben.sheetselection.createSheetSelection
 import com.khoben.sheetselection.sample.databinding.ActivityMainBinding
+import com.khoben.sheetselection.showSheetSelection
 
 class MainActivity : AppCompatActivity(), SheetSelectionListener {
 
@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity(), SheetSelectionListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.content.showbs.setOnClickListener {
-            createSheetSelection(SHEET_SELECTION_TAG) {
+            showSheetSelection(SHEET_SELECTION_TAG) {
                 title("Sheet Selection")
                 items(List(25) { SheetSelectionItem("$it", "#$it") })
                 enableDraggableIndicator(true)
