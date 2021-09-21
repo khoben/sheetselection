@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.khoben.sheetselection.SheetSelection
 import com.khoben.sheetselection.SheetSelectionItem
 import com.khoben.sheetselection.SheetSelectionListener
+import com.khoben.sheetselection.createSheetSelection
 import com.khoben.sheetselection.sample.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity(), SheetSelectionListener {
@@ -17,32 +18,34 @@ class MainActivity : AppCompatActivity(), SheetSelectionListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.content.showbs.setOnClickListener {
-            SheetSelection.Builder("SAMPLE")
-                .title("Sheet Selection")
-                .items(
-                    List(25) { SheetSelectionItem("$it", "#$it") }
-                )
-                .enableMultiSelection(true)
-                .showDraggedIndicator(true)
-                .searchEnabled(true)
-                .showCloseButton(true)
-                .showResetButton(true, SheetSelection.ResetMode.SELECT_ALL)
-                .searchNotFoundText("Nothing!!")
-                .show(supportFragmentManager)
+            createSheetSelection(SHEET_SELECTION_TAG) {
+                title("Sheet Selection")
+                items(List(25) { SheetSelectionItem("$it", "#$it") })
+                enableDraggableIndicator(true)
+                enableMultiSelection(true)
+                enableResetButton(true, SheetSelection.ResetMode.SELECT_ALL)
+                enableSearch(true)
+                enableCloseButton(true)
+                searchNotFoundText("Empty")
+            }
         }
     }
 
     override fun onSheetItemsSelected(
         all: List<SheetSelectionItem>,
         selected: List<SheetSelectionItem>,
-        tag: String?
+        sheetSelectionTag: String
     ) {
-        if (tag == "SAMPLE") {
+        if (sheetSelectionTag == SHEET_SELECTION_TAG) {
             Toast.makeText(
                 this,
                 "Selected: ${selected.joinToString { it.value }}",
                 Toast.LENGTH_LONG
             ).show()
         }
+    }
+
+    companion object {
+        private const val SHEET_SELECTION_TAG = "SAMPLE_TAG"
     }
 }

@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import androidx.annotation.IntDef
 import androidx.annotation.StyleRes
@@ -96,7 +95,7 @@ class SheetSelection : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         arguments?.let { args ->
 
-            sheetSelectionTag = arguments?.getString(ARGS_TAG)
+            sheetSelectionTag = args.getString(ARGS_TAG)
 
             items = args.getParcelableArrayList(ARGS_ITEMS)!!
 
@@ -112,7 +111,7 @@ class SheetSelection : BottomSheetDialogFragment() {
                     listener?.onSheetItemsSelected(
                         items,
                         items.filter { it.isChecked },
-                        sheetSelectionTag
+                        sheetSelectionTag!!
                     )
                     dismiss()
                 }
@@ -205,8 +204,7 @@ class SheetSelection : BottomSheetDialogFragment() {
     private val onItemSelectedListener = object : OnSheetItemClickListener {
         override fun onSheetItemClicked(
             clickedItem: SheetSelectionItem,
-            adapterPosition: Int,
-            tag: String?
+            adapterPosition: Int
         ) {
             if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, false) == true) {
                 clickedItem.isChecked = !clickedItem.isChecked
@@ -216,7 +214,10 @@ class SheetSelection : BottomSheetDialogFragment() {
                     selectionItem.isChecked = false
                 }
                 clickedItem.isChecked = true
-                listener?.onSheetItemsSelected(items, listOf(clickedItem), sheetSelectionTag)
+                listener?.onSheetItemsSelected(
+                    items, listOf(clickedItem),
+                    sheetSelectionTag!!
+                )
                 dismiss()
             }
         }
@@ -250,12 +251,12 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     private fun restoreBottomSheetState() {
         /**
-         * TODO: Ugly collapse animation:
+         * TODO: Ugly collapse animation (disabled restoring to WRAP_CONTENT)
          * If the size of the content doesn't allow it to stretch to the peekHeight,
-         * and when it collapsing,
-         * firstly, it goes to the peak and next to the size of the content.
+         * and then when it collapsing,  firstly, it goes to the peak and then to the size of the content.
+         * As temporary solution just don't restore bottom sheet height to WRAP_CONTENT.
          */
-        updateSheetHeight(WRAP_CONTENT)
+        // updateSheetHeight(WRAP_CONTENT)
         (dialog as? BottomSheetDialog)?.apply {
             behavior.state = getStableSheetBehaviourState(previousSheetState)
         }
@@ -321,18 +322,20 @@ class SheetSelection : BottomSheetDialogFragment() {
         }
     }
 
-    class Builder(private val tag: String) {
+    class Builder(private val sheetSelectionTag: String) {
         @StyleRes
         private var themeId: Int = R.style.Theme_SheetSelection
         private var title: String? = null
         private var items: List<SheetSelectionItem> = emptyList()
-        private var showDraggedIndicator: Boolean = false
-        private var searchEnabled: Boolean = false
-        private var multipleSelectionEnabled: Boolean = false
+
         private var searchNotFoundText: String? = null
         private var applyButtonText: String? = null
-        private var showCloseButton: Boolean = false
-        private var showResetButton: Boolean = false
+
+        private var searchEnabled: Boolean = false
+        private var draggableIndicatorEnabled: Boolean = false
+        private var closeButtonEnabled: Boolean = false
+        private var resetButtonEnabled: Boolean = false
+        private var multipleSelectionEnabled: Boolean = false
 
         @ResetMode
         private var resetMode: Int = ResetMode.NO_SELECTION
@@ -354,12 +357,12 @@ class SheetSelection : BottomSheetDialogFragment() {
             mapper: (T) -> SheetSelectionItem,
         ) = items(source.map { item -> mapper.invoke(item) })
 
-        fun showDraggedIndicator(show: Boolean) = apply {
-            this.showDraggedIndicator = show
+        fun enableDraggableIndicator(enable: Boolean) = apply {
+            this.draggableIndicatorEnabled = enable
         }
 
-        fun searchEnabled(enabled: Boolean) = apply {
-            this.searchEnabled = enabled
+        fun enableSearch(enable: Boolean) = apply {
+            this.searchEnabled = enable
         }
 
         fun searchNotFoundText(text: String) = apply {
@@ -370,19 +373,19 @@ class SheetSelection : BottomSheetDialogFragment() {
             this.multipleSelectionEnabled = enabled
         }
 
-        fun setApplyFilterButtonText(text: String) = apply {
+        fun applyMultiSelectionButtonText(text: String) = apply {
             this.applyButtonText = text
         }
 
-        fun showCloseButton(showCloseButton: Boolean) = apply {
-            this.showCloseButton = showCloseButton
+        fun enableCloseButton(enable: Boolean) = apply {
+            this.closeButtonEnabled = enable
         }
 
-        fun showResetButton(
-            showResetButton: Boolean,
+        fun enableResetButton(
+            enable: Boolean,
             @ResetMode resetMode: Int = ResetMode.NO_SELECTION
         ) = apply {
-            this.showResetButton = showResetButton
+            this.resetButtonEnabled = enable
             this.resetMode = resetMode
         }
 
@@ -392,15 +395,15 @@ class SheetSelection : BottomSheetDialogFragment() {
                     putInt(ARGS_THEME, this@Builder.themeId)
                     putString(ARGS_TITLE, this@Builder.title)
                     putParcelableArrayList(ARGS_ITEMS, ArrayList(this@Builder.items))
-                    putBoolean(ARGS_SHOW_DRAGGED_INDICATOR, this@Builder.showDraggedIndicator)
+                    putBoolean(ARGS_SHOW_DRAGGED_INDICATOR, this@Builder.draggableIndicatorEnabled)
                     putBoolean(ARGS_SEARCH_ENABLED, this@Builder.searchEnabled)
                     putString(ARGS_SEARCH_NOT_FOUND_TEXT, this@Builder.searchNotFoundText)
                     putBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, multipleSelectionEnabled)
                     putString(ARGS_APPLY_BUTTON_TEXT, applyButtonText)
-                    putBoolean(ARGS_SHOW_CLOSE_BTN, showCloseButton)
-                    putBoolean(ARGS_SHOW_RESET_BTN, showResetButton)
+                    putBoolean(ARGS_SHOW_CLOSE_BTN, closeButtonEnabled)
+                    putBoolean(ARGS_SHOW_RESET_BTN, resetButtonEnabled)
                     putInt(ARGS_SHOW_RESET_MODE, resetMode)
-                    putString(ARGS_TAG, this@Builder.tag)
+                    putString(ARGS_TAG, this@Builder.sheetSelectionTag)
                 }
         }
 

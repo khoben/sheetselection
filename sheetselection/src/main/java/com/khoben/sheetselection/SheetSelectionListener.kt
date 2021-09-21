@@ -6,11 +6,11 @@ interface SheetSelectionListener {
      *
      * @param all All items
      * @param selected Selected items
-     * @param tag SheetSelection's tag
+     * @param sheetSelectionTag SheetSelection's tag
      */
     fun onSheetItemsSelected(
         all: List<SheetSelectionItem>,
         selected: List<SheetSelectionItem>,
-        tag: String? = null
+        sheetSelectionTag: String
     )
 }
