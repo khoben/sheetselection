@@ -60,7 +60,6 @@ class SheetSelection : BottomSheetDialogFragment() {
                             updateStickyButton(bottomSheet, slideOffset)
                         }
                     })
-                    binding.root.post { updateStickyButton(binding.root.parent as View, 0f) }
                 }
             }
         }
@@ -93,6 +92,7 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.root.post { updateStickyButton(binding.root.parent as View, 0f) }
         arguments?.let { args ->
 
             sheetSelectionTag = args.getString(ARGS_TAG)
