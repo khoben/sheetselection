@@ -107,7 +107,7 @@ class SheetSelection : BottomSheetDialogFragment() {
                 binding.doneButtonContainer.visibility = View.VISIBLE
                 binding.doneButton.text =
                     args.getString(ARGS_APPLY_BUTTON_TEXT, getString(R.string.apply))
-                binding.doneButton.setOnClickListener {
+                binding.doneButtonContainer.setOnClickListener {
                     listener?.onSheetItemsSelected(
                         items,
                         items.filter { it.isChecked },
