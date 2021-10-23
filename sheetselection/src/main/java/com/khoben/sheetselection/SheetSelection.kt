@@ -7,11 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.LinearLayout
 import androidx.annotation.IntDef
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.updateLayoutParams
+import androidx.core.view.*
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -119,9 +118,6 @@ class SheetSelection : BottomSheetDialogFragment() {
 
             if (args.getBoolean(ARGS_SHOW_CLOSE_BTN)) {
                 binding.buttonClose.visibility = View.VISIBLE
-                binding.textViewTitle.updateLayoutParams<LinearLayout.LayoutParams> {
-                    marginStart = 0
-                }
                 binding.buttonClose.setOnClickListener {
                     dismiss()
                 }
@@ -139,8 +135,11 @@ class SheetSelection : BottomSheetDialogFragment() {
 
             if (args.getBoolean(ARGS_SEARCH_ENABLED)) {
                 binding.buttonSearch.visibility = View.VISIBLE
-                binding.buttonSearch.setOnClickListener(onSearchClickListener)
-                binding.searchView.setOnCloseListener(onSearchCloseListener)
+                binding.buttonSearch.setOnClickListener { enterSearchViewState() }
+                binding.searchView.setOnCloseListener {
+                    exitSearchViewState()
+                    true
+                }
                 binding.searchView.setOnQueryTextListener(onSearchQueryTextListener)
             }
 
@@ -178,7 +177,7 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     private fun updateResetButtonState(@ResetMode resetMode: Int) {
         val checkedCount = items.count { it.isChecked }
-        binding.buttonReset.isEnabled =
+        binding.buttonReset.isVisible =
             !((checkedCount == selectionAdapter.itemCount && resetMode == ResetMode.SELECT_ALL) ||
                     (checkedCount == 0 && resetMode == ResetMode.NO_SELECTION))
     }
@@ -197,8 +196,9 @@ class SheetSelection : BottomSheetDialogFragment() {
         listener = null
     }
 
-    private fun updateSheetHeight(viewHeight: Int) {
-        (binding.root.parent as View).updateLayoutParams { height = viewHeight }
+    private fun updateSheetHeight(height: Int) {
+        val view = binding.root.parent as View
+        view.updateLayoutParams { this.height = height }
     }
 
     private val onItemSelectedListener = object : OnSheetItemClickListener {
@@ -222,14 +222,6 @@ class SheetSelection : BottomSheetDialogFragment() {
             }
         }
     }
-    private val onSearchClickListener = View.OnClickListener {
-        enterSearchViewState()
-    }
-
-    private val onSearchCloseListener = SearchView.OnCloseListener {
-        exitSearchViewState()
-        true
-    }
 
     private fun enterSearchViewState() {
         toSearchableBottomSheetState()
@@ -238,27 +230,13 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     private fun exitSearchViewState() {
         toggleSearchState(false)
-        restoreBottomSheetState()
     }
 
     private fun toSearchableBottomSheetState() {
         updateSheetHeight(MATCH_PARENT)
-        (dialog as? BottomSheetDialog)?.apply {
-            previousSheetState = behavior.state
+        (dialog as BottomSheetDialog).apply {
+            previousSheetState = getStableSheetBehaviourState(behavior.state)
             behavior.state = STATE_EXPANDED
-        }
-    }
-
-    private fun restoreBottomSheetState() {
-        /**
-         * TODO: Ugly collapse animation (disabled restoring to WRAP_CONTENT)
-         * If the size of the content doesn't allow it to stretch to the peekHeight,
-         * and then when it collapsing,  firstly, it goes to the peak and then to the size of the content.
-         * As temporary solution just don't restore bottom sheet height to WRAP_CONTENT.
-         */
-        // updateSheetHeight(WRAP_CONTENT)
-        (dialog as? BottomSheetDialog)?.apply {
-            behavior.state = getStableSheetBehaviourState(previousSheetState)
         }
     }
 
@@ -280,7 +258,7 @@ class SheetSelection : BottomSheetDialogFragment() {
             binding.searchView.setQuery("", false)
             binding.viewSwitcherHeader.displayedChild = 0
         }
-        (dialog as? BottomSheetDialog)?.apply {
+        (dialog as BottomSheetDialog).apply {
             behavior.isDraggable = !isSearchable
         }
     }

@@ -31,19 +31,6 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/buttonClose"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:alpha="0.5"
-                android:background="?actionBarItemBackground"
-                android:padding="16dp"
-                android:src="@drawable/ic_close"
-                android:tint="?colorControlNormal"
-                android:visibility="gone"
-                tools:visibility="visible" />
-
             <TextView
                 android:id="@+id/textViewTitle"
                 style="?attr/sheetSelection_titleStyle"
@@ -56,27 +43,39 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/buttonSearch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageButton
+                android:id="@+id/buttonReset"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
                 android:layout_gravity="center_vertical"
                 android:background="?actionBarItemBackground"
-                android:padding="8dp"
+                android:alpha="0.75"
+                android:src="@drawable/ic_restore"
+                android:tint="?colorControlNormal"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/buttonSearch"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:layout_gravity="center_vertical"
+                android:background="?actionBarItemBackground"
+                android:alpha="0.75"
                 android:src="@drawable/ic_search"
                 android:tint="?colorControlNormal"
                 android:visibility="gone"
                 tools:visibility="visible" />
 
-            <Button
-                android:id="@+id/buttonReset"
-                style="?attr/sheetSelection_titleStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="0dp"
-                android:enabled="false"
-                android:text="@string/reset"
-                android:textStyle="normal"
+            <ImageButton
+                android:id="@+id/buttonClose"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:layout_gravity="center_vertical"
+                android:alpha="0.75"
+                android:background="?actionBarItemBackground"
+                android:src="@drawable/ic_close"
+                android:tint="?colorControlNormal"
                 android:visibility="gone"
                 tools:visibility="visible" />
         </LinearLayout>

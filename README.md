@@ -5,7 +5,8 @@
 ## Based on [minibugdev/SheetSelection](https://github.com/minibugdev/SheetSelection/tree/d6958f9a4ebe95eca539c9edc098d648ecd0d177) with some improvements:
 1. Multi-selection
 2. Retained selection callback
-3. and more little changes...
+3. Survive on rotation
+4. and more little changes...
 
 ## How to use
 ### [Sample app](app/src/main/java/com/khoben/sheetselection/sample/MainActivity.kt)
@@ -31,6 +32,6 @@ repositories {
 Add the dependency
 ``` groovy
 dependencies {
-    implementation 'com.github.khoben:sheetselection:2.0.0-alpha04'
+    implementation 'com.github.khoben:sheetselection:2.0.0-alpha05'
 }
 ```
