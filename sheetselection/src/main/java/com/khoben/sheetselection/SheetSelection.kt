@@ -184,10 +184,18 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is SheetSelectionListener) {
-            listener = context
+        listener = if (parentFragment != null) {
+            if (parentFragment is SheetSelectionListener) {
+                parentFragment as SheetSelectionListener
+            } else {
+                throw RuntimeException("$parentFragment should implement SheetSelectionListener interface")
+            }
         } else {
-            throw RuntimeException("$context should implement SheetSelectionListener interface")
+            if (context is SheetSelectionListener) {
+                context
+            } else {
+                throw RuntimeException("$context should implement SheetSelectionListener interface")
+            }
         }
     }
 
