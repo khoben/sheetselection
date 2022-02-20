@@ -91,7 +91,11 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.root.post { updateStickyButton(binding.root.parent as View, 0f) }
+
+        binding.root.post {
+            _binding?.let { updateStickyButton(it.root.parent as View, 0f) }
+        }
+
         arguments?.let { args ->
 
             sheetSelectionTag = args.getString(ARGS_TAG)
@@ -150,6 +154,19 @@ class SheetSelection : BottomSheetDialogFragment() {
             binding.recyclerViewSelectionItems.itemAnimator = null
             binding.recyclerViewSelectionItems.setEmptyView(binding.recyclerViewSelectionEmpty.apply {
                 text = args.getString(ARGS_SEARCH_NOT_FOUND_TEXT) ?: getString(R.string.not_found)
+            })
+
+            binding.headerButtons.outlineProvider = DownShadowOutlineProvider()
+            binding.recyclerViewSelectionItems.addOnScrollListener(object :
+                RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if (!recyclerView.canScrollVertically(-1)) {
+                        binding.headerButtons.elevation = 0f
+                    } else {
+                        binding.headerButtons.elevation = ELEVATION_ON_SCROLL
+                    }
+                }
             })
 
             if (args.getBoolean(ARGS_SHOW_RESET_BTN)) {
@@ -436,5 +453,6 @@ class SheetSelection : BottomSheetDialogFragment() {
         private const val STICKY_BOTTOM_DISAPPEARING_ACCELERATE = 6
         private const val PEEK_HEIGHT_AUTO_RATIO_THRESHOLD = 1.1f
         private const val WIDE_SCREEN_PEEK_HEIGHT_RATIO = 0.85f
+        private const val ELEVATION_ON_SCROLL = 3f
     }
 }

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="icon_button_size">48dp</dimen>
+    <dimen name="sticky_button_container_elevation">4dp</dimen>
+    <dimen name="header_container_margin_end">4dp</dimen>
 </resources>

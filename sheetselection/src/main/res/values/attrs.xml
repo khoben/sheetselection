@@ -5,6 +5,8 @@
         <attr name="sheetSelection_titleStyle" format="reference" />
         <attr name="sheetSelection_itemStyle" format="reference" />
         <attr name="sheetSelection_indicatorStyle" format="reference" />
+        <attr name="sheetSelection_buttonStyle" format="reference" />
+        <attr name="sheetSelection_buttonDoneText" format="reference" />
         <attr name="sheetSelection_indicatorColor" format="color" />
     </declare-styleable>
 </resources>

@@ -1,7 +1,10 @@
 package com.khoben.sheetselection
 
+import android.content.Context
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.AttrRes
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -10,7 +13,7 @@ import com.khoben.sheetselection.databinding.RowSelectionItemBinding
 
 class SheetSelectionAdapter(
     private val source: List<SheetSelectionItem>,
-    private val onItemSelectedListener: OnSheetItemClickListener?
+    private val onItemSelectedListener: OnSheetItemClickListener
 ) : RecyclerView.Adapter<SheetSelectionAdapter.ItemViewHolder>() {
 
     private var currentList: List<SheetSelectionItem> = source
@@ -75,9 +78,16 @@ class SheetSelectionAdapter(
         private val binding: RowSelectionItemBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
+        private fun getAttrColor(context: Context, @AttrRes attr: Int): Int {
+            val typedValue = TypedValue().also { typedValue ->
+                context.theme.resolveAttribute(attr, typedValue, true)
+            }
+            return ContextCompat.getColor(context, typedValue.resourceId)
+        }
+
         fun onBindView(
             item: SheetSelectionItem,
-            onItemSelectedListener: OnSheetItemClickListener?
+            onItemSelectedListener: OnSheetItemClickListener
         ) {
             binding.textViewItem.text = item.value
             val leftDrawable = if (item.icon != null)
@@ -90,7 +100,7 @@ class SheetSelectionAdapter(
                     itemView.context,
                     R.drawable.ic_check
                 )?.apply {
-                    setTint(Utils.getColor(itemView.context, R.attr.colorPrimary))
+                    setTint(getAttrColor(itemView.context, R.attr.colorPrimary))
                 } else null
 
             binding.textViewItem.setCompoundDrawablesWithIntrinsicBounds(
@@ -101,7 +111,7 @@ class SheetSelectionAdapter(
             )
 
             binding.textViewItem.setOnClickListener {
-                onItemSelectedListener?.onSheetItemClicked(item, adapterPosition)
+                onItemSelectedListener.onSheetItemClicked(item, adapterPosition)
             }
         }
     }

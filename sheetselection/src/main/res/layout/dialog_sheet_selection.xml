@@ -24,61 +24,47 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/textViewTitle"
-                style="?attr/sheetSelection_titleStyle"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/header_buttons"
+                android:layout_marginEnd="@dimen/header_container_margin_end"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:text="@tools:sample/lorem" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                <TextView
+                    android:id="@+id/textViewTitle"
+                    style="?attr/sheetSelection_titleStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="@tools:sample/lorem" />
 
-            <ImageButton
-                android:id="@+id/buttonReset"
-                android:layout_width="@dimen/icon_button_size"
-                android:layout_height="@dimen/icon_button_size"
-                android:layout_gravity="center_vertical"
-                android:background="?actionBarItemBackground"
-                android:alpha="0.75"
-                android:src="@drawable/ic_restore"
-                android:tint="?colorControlNormal"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
 
-            <ImageButton
-                android:id="@+id/buttonSearch"
-                android:layout_width="@dimen/icon_button_size"
-                android:layout_height="@dimen/icon_button_size"
-                android:layout_gravity="center_vertical"
-                android:background="?actionBarItemBackground"
-                android:alpha="0.75"
-                android:src="@drawable/ic_search"
-                android:tint="?colorControlNormal"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                <ImageButton
+                    android:id="@+id/buttonReset"
+                    style="?attr/sheetSelection_buttonStyle"
+                    android:src="@drawable/ic_restore"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
 
-            <ImageButton
-                android:id="@+id/buttonClose"
-                android:layout_width="@dimen/icon_button_size"
-                android:layout_height="@dimen/icon_button_size"
-                android:layout_gravity="center_vertical"
-                android:alpha="0.75"
-                android:background="?actionBarItemBackground"
-                android:src="@drawable/ic_close"
-                android:tint="?colorControlNormal"
-                android:visibility="gone"
-                tools:visibility="visible" />
-        </LinearLayout>
+                <ImageButton
+                    android:id="@+id/buttonSearch"
+                    style="?attr/sheetSelection_buttonStyle"
+                    android:src="@drawable/ic_search"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <ImageButton
+                    android:id="@+id/buttonClose"
+                    style="?attr/sheetSelection_buttonStyle"
+                    android:src="@drawable/ic_close"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+            </LinearLayout>
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
@@ -97,13 +83,8 @@
 
         <TextView
             android:id="@+id/recyclerViewSelectionEmpty"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:padding="16dp"
+            style="@style/Widget.SheetSelection.EmptyView"
             android:visibility="gone"
-            app:drawableTint="?colorOnSurface"
-            app:drawableTopCompat="@drawable/ic_nothing"
             tools:text="Nothing"
             tools:visibility="visible" />
 
@@ -120,27 +101,13 @@
     <!-- Sticky button layout -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/doneButtonContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
+        style="@style/Widget.SheetSelection.Sticky"
         android:visibility="gone"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="4dp"
-        app:strokeColor="@android:color/transparent"
-        app:strokeWidth="0dp"
         tools:visibility="visible">
 
         <TextView
             android:id="@+id/doneButton"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:clickable="false"
-            android:focusable="false"
-            android:text="@string/apply"
-            android:textAllCaps="true" />
+            style="@style/Widget.SheetSelection.Sticky.Button" />
     </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>
