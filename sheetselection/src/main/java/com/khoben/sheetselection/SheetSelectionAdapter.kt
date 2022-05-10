@@ -3,57 +3,75 @@ package com.khoben.sheetselection
 import android.content.Context
 import android.util.TypedValue
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.AttrRes
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.khoben.sheetselection.databinding.EmptyItemBinding
 import com.khoben.sheetselection.databinding.RowSelectionItemBinding
 
 
 class SheetSelectionAdapter(
     private val source: List<SheetSelectionItem>,
-    private val onItemSelectedListener: OnSheetItemClickListener
-) : RecyclerView.Adapter<SheetSelectionAdapter.ItemViewHolder>() {
+    private val emptyText: String,
+    private val onItemSelected: (item: SheetSelectionItem, position: Int) -> Unit
+) : RecyclerView.Adapter<SheetSelectionAdapter.BaseViewHolder>() {
 
     private var currentList: List<SheetSelectionItem> = source
 
-    override fun getItemCount() = currentList.size
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        val binding = RowSelectionItemBinding.inflate(layoutInflater, parent, false)
-        return ItemViewHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        holder.onBindView(
-            item = currentList[position],
-            onItemSelectedListener = onItemSelectedListener
-        )
-    }
-
-    private var recyclerView: EmptyRecyclerView? = null
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        if (recyclerView is EmptyRecyclerView) {
-            this.recyclerView = recyclerView
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_EMPTY -> EmptyViewHolder(
+                EmptyItemBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+            VIEW_TYPE_ITEM -> ItemViewHolder(
+                RowSelectionItemBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+            else -> throw IllegalArgumentException("Invalid viewType")
         }
     }
 
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView)
-        this.recyclerView = null
+
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+        when (holder) {
+            is EmptyViewHolder -> holder.bind(emptyText)
+            is ItemViewHolder -> holder.bind(
+                item = currentList[position],
+                onItemSelected = onItemSelected
+            )
+            else -> throw IllegalArgumentException("Invalid viewHolder")
+        }
     }
+
+    override fun getItemCount() =
+        when (val count = currentList.size) {
+            0 -> 1
+            else -> count
+        }
+
+    override fun getItemViewType(position: Int): Int =
+        if (currentList.isEmpty()) {
+            VIEW_TYPE_EMPTY
+        } else {
+            VIEW_TYPE_ITEM
+        }
 
     fun search(keyword: String?) {
         if (keyword.isNullOrBlank()) {
             internalUpdate(source)
-            recyclerView?.setEmptyState(false)
         } else {
             val searchResult = source.filter { it.value.contains(keyword, true) }
             internalUpdate(searchResult)
-            recyclerView?.setEmptyState(searchResult.isEmpty())
         }
     }
 
@@ -70,13 +88,24 @@ class SheetSelectionAdapter(
     private fun internalUpdate(newList: List<SheetSelectionItem>) {
         val diffResult: DiffUtil.DiffResult =
             DiffUtil.calculateDiff(SelectionDiffCallback(currentList, newList), false)
-        this.currentList = newList
         diffResult.dispatchUpdatesTo(this)
+        currentList = newList
     }
 
-    class ItemViewHolder(
+    abstract class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    private class EmptyViewHolder(
+        private val binding: EmptyItemBinding
+    ) : BaseViewHolder(binding.root) {
+
+        fun bind(item: String) {
+            binding.emptyResultView.text = item
+        }
+    }
+
+    private class ItemViewHolder(
         private val binding: RowSelectionItemBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : BaseViewHolder(binding.root) {
 
         private fun getAttrColor(context: Context, @AttrRes attr: Int): Int {
             val typedValue = TypedValue().also { typedValue ->
@@ -85,9 +114,9 @@ class SheetSelectionAdapter(
             return ContextCompat.getColor(context, typedValue.resourceId)
         }
 
-        fun onBindView(
+        fun bind(
             item: SheetSelectionItem,
-            onItemSelectedListener: OnSheetItemClickListener
+            onItemSelected: (item: SheetSelectionItem, position: Int) -> Unit
         ) {
             binding.textViewItem.text = item.value
             val leftDrawable = if (item.icon != null)
@@ -111,8 +140,13 @@ class SheetSelectionAdapter(
             )
 
             binding.textViewItem.setOnClickListener {
-                onItemSelectedListener.onSheetItemClicked(item, adapterPosition)
+                onItemSelected.invoke(item, adapterPosition)
             }
         }
+    }
+
+    companion object {
+        private const val VIEW_TYPE_EMPTY = 0
+        private const val VIEW_TYPE_ITEM = 1
     }
 }

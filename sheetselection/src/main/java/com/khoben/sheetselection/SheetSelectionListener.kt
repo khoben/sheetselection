@@ -4,13 +4,11 @@ interface SheetSelectionListener {
     /**
      * Sheet selection callback
      *
-     * @param all All items
-     * @param selected Selected items
-     * @param sheetSelectionTag SheetSelection's tag
+     * @param event Sheet selection event
      */
-    fun onSheetItemsSelected(
-        all: List<SheetSelectionItem>,
-        selected: List<SheetSelectionItem>,
-        sheetSelectionTag: String
-    )
+    fun onSheetItemsSelected(event: SheetSelectionEvent)
+
+    object NOOP : SheetSelectionListener {
+        override fun onSheetItemsSelected(event: SheetSelectionEvent) = Unit
+    }
 }

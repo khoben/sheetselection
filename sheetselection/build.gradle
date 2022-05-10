@@ -35,7 +35,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.khoben'
                 artifactId = 'sheetselection'
-                version = '2.0.1-alpha01'
+                version = '2.0.1'
             }
         }
     }
@@ -43,5 +43,5 @@ afterEvaluate {
 
 dependencies {
     implementation "androidx.fragment:fragment-ktx:1.4.1"
-    implementation "com.google.android.material:material:1.5.0"
+    implementation "com.google.android.material:material:1.6.0"
 }

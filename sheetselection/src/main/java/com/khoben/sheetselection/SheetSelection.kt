@@ -10,7 +10,8 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.IntDef
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.*
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -23,24 +24,24 @@ import kotlin.math.roundToInt
 
 class SheetSelection : BottomSheetDialogFragment() {
 
-    private lateinit var items: List<SheetSelectionItem>
-    private lateinit var selectionAdapter: SheetSelectionAdapter
-
-    private var sheetSelectionTag: String? = null
-    private var listener: SheetSelectionListener? = null
-
     private var _binding: DialogSheetSelectionBinding? = null
     private val binding get() = _binding!!
 
-    private var isSearchableState: Boolean = false
+    private var sheetSelectionTag: String = ""
+    private var listener: SheetSelectionListener = SheetSelectionListener.NOOP
+
+    private var searchableState: Boolean = false
     private var previousSheetState: Int = STATE_COLLAPSED
+
+    private lateinit var items: List<SheetSelectionItem>
+    private lateinit var selectionAdapter: SheetSelectionAdapter
 
     override fun getTheme(): Int = arguments?.getInt(ARGS_THEME) ?: super.getTheme()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return object : BottomSheetDialog(requireContext(), theme) {
             override fun onBackPressed() {
-                if (isSearchableState) {
+                if (searchableState) {
                     exitSearchViewState()
                 } else {
                     super.onBackPressed()
@@ -98,7 +99,7 @@ class SheetSelection : BottomSheetDialogFragment() {
 
         arguments?.let { args ->
 
-            sheetSelectionTag = args.getString(ARGS_TAG)
+            sheetSelectionTag = args.getString(ARGS_TAG, "")
 
             items = args.getParcelableArrayList(ARGS_ITEMS)!!
 
@@ -111,10 +112,12 @@ class SheetSelection : BottomSheetDialogFragment() {
                 binding.doneButton.text =
                     args.getString(ARGS_APPLY_BUTTON_TEXT, getString(R.string.apply))
                 binding.doneButtonContainer.setOnClickListener {
-                    listener?.onSheetItemsSelected(
-                        items,
-                        items.filter { it.isChecked },
-                        sheetSelectionTag!!
+                    listener.onSheetItemsSelected(
+                        SheetSelectionEvent(
+                            sheetSelectionTag,
+                            items.filter { it.isChecked },
+                            items
+                        )
                     )
                     dismiss()
                 }
@@ -144,20 +147,32 @@ class SheetSelection : BottomSheetDialogFragment() {
                     exitSearchViewState()
                     true
                 }
-                binding.searchView.setOnQueryTextListener(onSearchQueryTextListener)
+                binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextChange(query: String): Boolean {
+                        selectionAdapter.search(query)
+                        return true
+                    }
+
+                    override fun onQueryTextSubmit(query: String): Boolean {
+                        selectionAdapter.search(query)
+                        return true
+                    }
+                })
             }
 
-            binding.recyclerViewSelectionItems.adapter = SheetSelectionAdapter(
-                source = items,
-                onItemSelectedListener = onItemSelectedListener
-            ).also { selectionAdapter = it }
-            binding.recyclerViewSelectionItems.itemAnimator = null
-            binding.recyclerViewSelectionItems.setEmptyView(binding.recyclerViewSelectionEmpty.apply {
-                text = args.getString(ARGS_SEARCH_NOT_FOUND_TEXT) ?: getString(R.string.not_found)
-            })
-
-            binding.headerButtons.outlineProvider = DownShadowOutlineProvider()
-            binding.recyclerViewSelectionItems.addOnScrollListener(object :
+            selectionAdapter =
+                SheetSelectionAdapter(
+                    source = items,
+                    emptyText = args.getString(ARGS_SEARCH_NOT_FOUND_TEXT)
+                        ?: getString(R.string.not_found),
+                    onItemSelected = ::onItemSelected
+                )
+            binding.selectionItemList.adapter = selectionAdapter
+            binding.selectionItemList.itemAnimator = null
+            binding.headerButtons.outlineProvider =
+                BottomOutlineProvider(ELEVATION_OUTLINE_BOTTOM_PADDING)
+            binding.headerButtons.clipToOutline = true
+            binding.selectionItemList.addOnScrollListener(object :
                 RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
@@ -217,8 +232,8 @@ class SheetSelection : BottomSheetDialogFragment() {
     }
 
     override fun onDetach() {
+        listener = SheetSelectionListener.NOOP
         super.onDetach()
-        listener = null
     }
 
     private fun updateSheetHeight(height: Int) {
@@ -226,25 +241,19 @@ class SheetSelection : BottomSheetDialogFragment() {
         view.updateLayoutParams { this.height = height }
     }
 
-    private val onItemSelectedListener = object : OnSheetItemClickListener {
-        override fun onSheetItemClicked(
-            clickedItem: SheetSelectionItem,
-            adapterPosition: Int
-        ) {
-            if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, false) == true) {
-                clickedItem.isChecked = !clickedItem.isChecked
-                selectionAdapter.notifyItemChanged(adapterPosition)
-            } else {
-                items.forEach { selectionItem ->
-                    selectionItem.isChecked = false
-                }
-                clickedItem.isChecked = true
-                listener?.onSheetItemsSelected(
-                    items, listOf(clickedItem),
-                    sheetSelectionTag!!
-                )
-                dismiss()
+    private fun onItemSelected(item: SheetSelectionItem, position: Int) {
+        if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, false) == true) {
+            item.isChecked = !item.isChecked
+            selectionAdapter.notifyItemChanged(position)
+        } else {
+            items.forEach { selectionItem ->
+                selectionItem.isChecked = false
             }
+            item.isChecked = true
+            listener.onSheetItemsSelected(
+                SheetSelectionEvent(sheetSelectionTag, listOf(item), items)
+            )
+            dismiss()
         }
     }
 
@@ -275,7 +284,7 @@ class SheetSelection : BottomSheetDialogFragment() {
     }
 
     private fun toggleSearchState(isSearchable: Boolean) {
-        this.isSearchableState = isSearchable
+        this.searchableState = isSearchable
         if (isSearchable) {
             binding.viewSwitcherHeader.displayedChild = 1
             binding.searchView.isIconified = false
@@ -285,18 +294,6 @@ class SheetSelection : BottomSheetDialogFragment() {
         }
         (dialog as BottomSheetDialog).apply {
             behavior.isDraggable = !isSearchable
-        }
-    }
-
-    private val onSearchQueryTextListener = object : SearchView.OnQueryTextListener {
-        override fun onQueryTextChange(newText: String?): Boolean {
-            selectionAdapter.search(newText)
-            return true
-        }
-
-        override fun onQueryTextSubmit(query: String?): Boolean {
-            selectionAdapter.search(query)
-            return true
         }
     }
 
@@ -312,7 +309,7 @@ class SheetSelection : BottomSheetDialogFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(STATE_PREV_STATE, previousSheetState)
-        outState.putBoolean(STATE_SEARCH, isSearchableState)
+        outState.putBoolean(STATE_SEARCH, searchableState)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -453,6 +450,7 @@ class SheetSelection : BottomSheetDialogFragment() {
         private const val STICKY_BOTTOM_DISAPPEARING_ACCELERATE = 6
         private const val PEEK_HEIGHT_AUTO_RATIO_THRESHOLD = 1.1f
         private const val WIDE_SCREEN_PEEK_HEIGHT_RATIO = 0.85f
-        private const val ELEVATION_ON_SCROLL = 3f
+        private const val ELEVATION_ON_SCROLL = 4f
+        private const val ELEVATION_OUTLINE_BOTTOM_PADDING = 2
     }
 }

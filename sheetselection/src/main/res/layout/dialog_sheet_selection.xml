@@ -4,9 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:fitsSystemWindows="true"
     android:orientation="vertical"
-    app:layout_behavior="@string/bottom_sheet_behavior"
     tools:theme="@style/Theme.SheetSelection">
 
     <!-- Draggable indicator -->
@@ -24,47 +22,48 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-            <LinearLayout
-                android:id="@+id/header_buttons"
-                android:layout_marginEnd="@dimen/header_container_margin_end"
-                android:layout_width="match_parent"
+        <LinearLayout
+            android:id="@+id/headerButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/header_container_margin_end"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textViewTitle"
+                style="?attr/sheetSelection_titleStyle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                tools:text="@tools:sample/lorem" />
 
-                <TextView
-                    android:id="@+id/textViewTitle"
-                    style="?attr/sheetSelection_titleStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="@tools:sample/lorem" />
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
+            <ImageButton
+                android:id="@+id/buttonReset"
+                style="?attr/sheetSelection_buttonStyle"
+                android:src="@drawable/ic_restore"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
-                <ImageButton
-                    android:id="@+id/buttonReset"
-                    style="?attr/sheetSelection_buttonStyle"
-                    android:src="@drawable/ic_restore"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
+            <ImageButton
+                android:id="@+id/buttonSearch"
+                style="?attr/sheetSelection_buttonStyle"
+                android:src="@drawable/ic_search"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
-                <ImageButton
-                    android:id="@+id/buttonSearch"
-                    style="?attr/sheetSelection_buttonStyle"
-                    android:src="@drawable/ic_search"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-
-                <ImageButton
-                    android:id="@+id/buttonClose"
-                    style="?attr/sheetSelection_buttonStyle"
-                    android:src="@drawable/ic_close"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-            </LinearLayout>
+            <ImageButton
+                android:id="@+id/buttonClose"
+                style="?attr/sheetSelection_buttonStyle"
+                android:src="@drawable/ic_close"
+                android:visibility="gone"
+                tools:visibility="visible" />
+        </LinearLayout>
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
@@ -76,27 +75,14 @@
     </ViewSwitcher>
 
     <!-- Content -->
-    <FrameLayout
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/selectionItemList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <TextView
-            android:id="@+id/recyclerViewSelectionEmpty"
-            style="@style/Widget.SheetSelection.EmptyView"
-            android:visibility="gone"
-            tools:text="Nothing"
-            tools:visibility="visible" />
-
-        <com.khoben.sheetselection.EmptyRecyclerView
-            android:id="@+id/recyclerViewSelectionItems"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:itemCount="10"
-            tools:listitem="@layout/row_selection_item" />
-
-    </FrameLayout>
+        android:layout_weight="1"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:itemCount="10"
+        tools:listitem="@layout/row_selection_item" />
 
     <!-- Sticky button layout -->
     <com.google.android.material.card.MaterialCardView
