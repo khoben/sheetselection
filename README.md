@@ -9,7 +9,7 @@
 4. and more little changes...
 
 ## How to use
-### [Sample app](app/src/main/java/com/khoben/sheetselection/sample/MainActivity.kt)
+### [Sample app (apk)](https://github.com/khoben/sheetselection/releases/latest/download/sample.apk)
 
 ## Screenshots
 <table>
@@ -32,6 +32,6 @@ repositories {
 Add the dependency
 ``` groovy
 dependencies {
-    implementation 'com.github.khoben:sheetselection:2.0.1'
+    implementation 'com.github.khoben:sheetselection:2.0.2'
 }
 ```
