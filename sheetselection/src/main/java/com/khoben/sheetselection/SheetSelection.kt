@@ -160,29 +160,35 @@ class SheetSelection : BottomSheetDialogFragment() {
                 })
             }
 
-            selectionAdapter =
-                SheetSelectionAdapter(
+            with(binding.selectionItemList) {
+                adapter = SheetSelectionAdapter(
                     source = items,
                     emptyText = args.getString(ARGS_SEARCH_NOT_FOUND_TEXT)
                         ?: getString(R.string.not_found),
                     onItemSelected = ::onItemSelected
-                )
-            binding.selectionItemList.adapter = selectionAdapter
-            binding.selectionItemList.itemAnimator = null
-            binding.headerButtons.outlineProvider =
-                BottomOutlineProvider(ELEVATION_OUTLINE_BOTTOM_PADDING)
-            binding.headerButtons.clipToOutline = true
-            binding.selectionItemList.addOnScrollListener(object :
-                RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    super.onScrolled(recyclerView, dx, dy)
-                    if (!recyclerView.canScrollVertically(-1)) {
-                        binding.headerButtons.elevation = 0f
-                    } else {
-                        binding.headerButtons.elevation = ELEVATION_ON_SCROLL
+                ).also { selectionAdapter = it }
+                itemAnimator = null
+                addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+                    private val SHADOW_ANIMATION_DURATION_MS: Long = 150L
+                    private var shadowHeaderVisible: Boolean = false
+
+                    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                        val showHeaderShadow = recyclerView.canScrollVertically(-1)
+                        if (showHeaderShadow && !shadowHeaderVisible) {
+                            binding.headerShadow.animate().cancel()
+                            binding.headerShadow.animate().alpha(1f)
+                                .setDuration(SHADOW_ANIMATION_DURATION_MS).start()
+                            shadowHeaderVisible = true
+                        } else if (!showHeaderShadow && shadowHeaderVisible) {
+                            binding.headerShadow.animate().cancel()
+                            binding.headerShadow.animate().alpha(0f)
+                                .setDuration(SHADOW_ANIMATION_DURATION_MS).start()
+                            shadowHeaderVisible = false
+                        }
                     }
-                }
-            })
+                })
+            }
 
             if (args.getBoolean(ARGS_SHOW_RESET_BTN)) {
                 val resetMode = args.getInt(ARGS_SHOW_RESET_MODE)
@@ -450,7 +456,5 @@ class SheetSelection : BottomSheetDialogFragment() {
         private const val STICKY_BOTTOM_DISAPPEARING_ACCELERATE = 6
         private const val PEEK_HEIGHT_AUTO_RATIO_THRESHOLD = 1.1f
         private const val WIDE_SCREEN_PEEK_HEIGHT_RATIO = 0.85f
-        private const val ELEVATION_ON_SCROLL = 4f
-        private const val ELEVATION_OUTLINE_BOTTOM_PADDING = 2
     }
 }

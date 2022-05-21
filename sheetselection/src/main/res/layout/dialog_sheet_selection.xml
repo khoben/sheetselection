@@ -20,14 +20,15 @@
     <ViewSwitcher
         android:id="@+id/viewSwitcherHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/header_container_margin_top"
+        android:layout_marginBottom="@dimen/header_container_margin_bottom">
 
         <LinearLayout
             android:id="@+id/headerButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/header_container_margin_end"
-            android:clipToPadding="false"
+            android:layout_marginEnd="@dimen/header_margin_end"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -75,14 +76,27 @@
     </ViewSwitcher>
 
     <!-- Content -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/selectionItemList"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:itemCount="10"
-        tools:listitem="@layout/row_selection_item" />
+        android:layout_weight="1">
+
+        <View
+            android:id="@+id/header_shadow"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:alpha="0"
+            android:background="@drawable/header_shadow" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/selectionItemList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="10"
+            tools:listitem="@layout/row_selection_item" />
+
+    </FrameLayout>
 
     <!-- Sticky button layout -->
     <com.google.android.material.card.MaterialCardView
