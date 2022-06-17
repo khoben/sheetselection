@@ -45,38 +45,6 @@ class SheetSelection : BottomSheetDialogFragment() {
                     super.onBackPressed()
                 }
             }
-        }.apply {
-            behavior.peekHeight = calcBottomSheetPeekHeight()
-            if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED) == true) {
-                setOnShowListener {
-                    behavior.addBottomSheetCallback(object :
-                        BottomSheetBehavior.BottomSheetCallback() {
-                        override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
-                        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                            updateStickyButton(
-                                bottomSheet,
-                                binding.doneButtonContainer,
-                                slideOffset
-                            )
-                        }
-                    })
-                }
-            }
-        }
-    }
-
-    private fun updateStickyButton(
-        bottomSheet: View,
-        stickyButton: View,
-        slideOffset: Float
-    ) {
-        val parentHeight: Float = (bottomSheet.parent as View).measuredHeight.toFloat()
-        stickyButton.y = if (slideOffset < 0) { // down
-            parentHeight -
-                    bottomSheet.top - (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset + 1) *
-                    stickyButton.measuredHeight
-        } else { // up
-            parentHeight - bottomSheet.top - stickyButton.measuredHeight
         }
     }
 
@@ -191,12 +159,27 @@ class SheetSelection : BottomSheetDialogFragment() {
             }
         }
 
-        // Initial sticky bottom placement
-        val bottomSheet: View = binding.root.parent as View
-        val stickyButton: View = binding.doneButtonContainer
-        bottomSheet.post {
-            stickyButton.post {
-                updateStickyButton(bottomSheet, stickyButton, 0f)
+        with(requireDialog() as BottomSheetDialog) {
+            behavior.peekHeight = calcBottomSheetPeekHeight()
+            // Initial sticky bottom placement
+            val bottomSheet: View = binding.root.parent as View
+            val stickyButton: View = binding.doneButtonContainer
+            bottomSheet.post {
+                stickyButton.post {
+                    updateStickyButton(bottomSheet, stickyButton, 0f)
+                }
+            }
+            if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED) == true) {
+                behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                    override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
+                    override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                        updateStickyButton(
+                            bottomSheet,
+                            binding.doneButtonContainer,
+                            slideOffset
+                        )
+                    }
+                })
             }
         }
     }
@@ -221,6 +204,21 @@ class SheetSelection : BottomSheetDialogFragment() {
     override fun onDetach() {
         listener = SheetSelectionListener.NOOP
         super.onDetach()
+    }
+
+    private fun updateStickyButton(
+        bottomSheet: View,
+        stickyButton: View,
+        slideOffset: Float
+    ) {
+        val parentHeight: Float = (bottomSheet.parent as View).measuredHeight.toFloat()
+        stickyButton.y = if (slideOffset < 0) { // down
+            parentHeight -
+                    bottomSheet.top - (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset + 1) *
+                    stickyButton.measuredHeight
+        } else { // up
+            parentHeight - bottomSheet.top - stickyButton.measuredHeight
+        }
     }
 
     private fun updateSheetHeight(height: Int) {
