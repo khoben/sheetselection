@@ -7,10 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import androidx.annotation.IntDef
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,7 +25,7 @@ class SheetSelection : BottomSheetDialogFragment() {
     private var _binding: DialogSheetSelectionBinding? = null
     private val binding get() = _binding!!
 
-    private var sheetSelectionTag: String = ""
+    private var sheetSelectionTag: String = EMPTY_TAG
     private var listener: SheetSelectionListener = SheetSelectionListener.NOOP
 
     private var searchableState: Boolean = false
@@ -53,11 +51,13 @@ class SheetSelection : BottomSheetDialogFragment() {
                 setOnShowListener {
                     behavior.addBottomSheetCallback(object :
                         BottomSheetBehavior.BottomSheetCallback() {
-                        override fun onStateChanged(bottomSheet: View, newState: Int) {
-                        }
-
+                        override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
                         override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                            updateStickyButton(bottomSheet, slideOffset)
+                            updateStickyButton(
+                                bottomSheet,
+                                binding.doneButtonContainer,
+                                slideOffset
+                            )
                         }
                     })
                 }
@@ -65,14 +65,18 @@ class SheetSelection : BottomSheetDialogFragment() {
         }
     }
 
-    private fun updateStickyButton(bottomSheet: View, slideOffset: Float) {
-        binding.doneButtonContainer.y = if (slideOffset < 0) {
-            (bottomSheet.parent as View).height -
+    private fun updateStickyButton(
+        bottomSheet: View,
+        stickyButton: View,
+        slideOffset: Float
+    ) {
+        val parentHeight: Float = (bottomSheet.parent as View).measuredHeight.toFloat()
+        stickyButton.y = if (slideOffset < 0) { // down
+            parentHeight -
                     bottomSheet.top - (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset + 1) *
-                    binding.doneButtonContainer.height
-        } else {
-            (bottomSheet.parent as View).height.toFloat() - bottomSheet.top -
-                    binding.doneButtonContainer.height
+                    stickyButton.measuredHeight
+        } else { // up
+            parentHeight - bottomSheet.top - stickyButton.measuredHeight
         }
     }
 
@@ -93,13 +97,9 @@ class SheetSelection : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.root.post {
-            _binding?.let { updateStickyButton(it.root.parent as View, 0f) }
-        }
-
         arguments?.let { args ->
 
-            sheetSelectionTag = args.getString(ARGS_TAG, "")
+            sheetSelectionTag = args.getString(ARGS_TAG) ?: EMPTY_TAG
 
             items = args.getParcelableArrayList(ARGS_ITEMS)!!
 
@@ -110,7 +110,7 @@ class SheetSelection : BottomSheetDialogFragment() {
             if (args.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED)) {
                 binding.doneButtonContainer.visibility = View.VISIBLE
                 binding.doneButton.text =
-                    args.getString(ARGS_APPLY_BUTTON_TEXT, getString(R.string.apply))
+                    args.getString(ARGS_MULTIPLE_SELECTION_BUTTON_TEXT, getString(R.string.apply))
                 binding.doneButtonContainer.setOnClickListener {
                     listener.onSheetItemsSelected(
                         SheetSelectionEvent(
@@ -189,35 +189,16 @@ class SheetSelection : BottomSheetDialogFragment() {
                     }
                 })
             }
+        }
 
-            if (args.getBoolean(ARGS_SHOW_RESET_BTN)) {
-                val resetMode = args.getInt(ARGS_SHOW_RESET_MODE)
-                if (resetMode == ResetMode.SELECT_ALL &&
-                    !args.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED)
-                ) {
-                    throw IllegalArgumentException("ResetMode.SELECT_ALL is not compatible with single selection mode")
-                }
-                binding.buttonReset.visibility = View.VISIBLE
-                updateResetButtonState(resetMode)
-                binding.buttonReset.setOnClickListener {
-                    selectionAdapter.resetCheckedStates(resetMode)
-                }
-                selectionAdapter.registerAdapterDataObserver(object :
-                    RecyclerView.AdapterDataObserver() {
-                    override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-                        super.onItemRangeChanged(positionStart, itemCount)
-                        updateResetButtonState(resetMode)
-                    }
-                })
+        // Initial sticky bottom placement
+        val bottomSheet: View = binding.root.parent as View
+        val stickyButton: View = binding.doneButtonContainer
+        bottomSheet.post {
+            stickyButton.post {
+                updateStickyButton(bottomSheet, stickyButton, 0f)
             }
         }
-    }
-
-    private fun updateResetButtonState(@ResetMode resetMode: Int) {
-        val checkedCount = items.count { it.isChecked }
-        binding.buttonReset.isVisible =
-            !((checkedCount == selectionAdapter.itemCount && resetMode == ResetMode.SELECT_ALL) ||
-                    (checkedCount == 0 && resetMode == ResetMode.NO_SELECTION))
     }
 
     override fun onAttach(context: Context) {
@@ -335,16 +316,12 @@ class SheetSelection : BottomSheetDialogFragment() {
         private var items: List<SheetSelectionItem> = emptyList()
 
         private var searchNotFoundText: String? = null
-        private var applyButtonText: String? = null
+        private var multiselectionButtonText: String? = null
 
         private var searchEnabled: Boolean = false
         private var draggableIndicatorEnabled: Boolean = false
         private var closeButtonEnabled: Boolean = false
-        private var resetButtonEnabled: Boolean = false
         private var multipleSelectionEnabled: Boolean = false
-
-        @ResetMode
-        private var resetMode: Int = ResetMode.NO_SELECTION
 
         fun theme(@StyleRes themeId: Int) = apply {
             this.themeId = themeId
@@ -379,54 +356,31 @@ class SheetSelection : BottomSheetDialogFragment() {
             this.multipleSelectionEnabled = enabled
         }
 
-        fun applyMultiSelectionButtonText(text: String) = apply {
-            this.applyButtonText = text
+        fun multiSelectionButtonText(text: String) = apply {
+            this.multiselectionButtonText = text
         }
 
         fun enableCloseButton(enable: Boolean) = apply {
             this.closeButtonEnabled = enable
         }
 
-        fun enableResetButton(
-            enable: Boolean,
-            @ResetMode resetMode: Int = ResetMode.NO_SELECTION
-        ) = apply {
-            this.resetButtonEnabled = enable
-            this.resetMode = resetMode
-        }
-
         fun build() = SheetSelection().apply {
-            arguments = Bundle()
-                .apply {
-                    putInt(ARGS_THEME, this@Builder.themeId)
-                    putString(ARGS_TITLE, this@Builder.title)
-                    putParcelableArrayList(ARGS_ITEMS, ArrayList(this@Builder.items))
-                    putBoolean(ARGS_SHOW_DRAGGED_INDICATOR, this@Builder.draggableIndicatorEnabled)
-                    putBoolean(ARGS_SEARCH_ENABLED, this@Builder.searchEnabled)
-                    putString(ARGS_SEARCH_NOT_FOUND_TEXT, this@Builder.searchNotFoundText)
-                    putBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, multipleSelectionEnabled)
-                    putString(ARGS_APPLY_BUTTON_TEXT, applyButtonText)
-                    putBoolean(ARGS_SHOW_CLOSE_BTN, closeButtonEnabled)
-                    putBoolean(ARGS_SHOW_RESET_BTN, resetButtonEnabled)
-                    putInt(ARGS_SHOW_RESET_MODE, resetMode)
-                    putString(ARGS_TAG, this@Builder.sheetSelectionTag)
-                }
+            arguments = Bundle().apply {
+                putInt(ARGS_THEME, this@Builder.themeId)
+                putString(ARGS_TITLE, this@Builder.title)
+                putParcelableArrayList(ARGS_ITEMS, ArrayList(this@Builder.items))
+                putBoolean(ARGS_SHOW_DRAGGED_INDICATOR, this@Builder.draggableIndicatorEnabled)
+                putBoolean(ARGS_SEARCH_ENABLED, this@Builder.searchEnabled)
+                putString(ARGS_SEARCH_NOT_FOUND_TEXT, this@Builder.searchNotFoundText)
+                putBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, multipleSelectionEnabled)
+                putString(ARGS_MULTIPLE_SELECTION_BUTTON_TEXT, multiselectionButtonText)
+                putBoolean(ARGS_SHOW_CLOSE_BTN, closeButtonEnabled)
+                putString(ARGS_TAG, this@Builder.sheetSelectionTag)
+            }
         }
 
         fun show(manager: FragmentManager) {
             build().show(manager, TAG)
-        }
-    }
-
-    @IntDef(
-        ResetMode.SELECT_ALL,
-        ResetMode.NO_SELECTION
-    )
-    @Retention(AnnotationRetention.SOURCE)
-    annotation class ResetMode {
-        companion object {
-            const val SELECT_ALL = 0
-            const val NO_SELECTION = 1
         }
     }
 
@@ -440,14 +394,10 @@ class SheetSelection : BottomSheetDialogFragment() {
         private const val ARGS_SEARCH_ENABLED = "SheetSelection:ARGS_SEARCH_ENABLED"
         private const val ARGS_MULTIPLE_SELECTION_ENABLED =
             "SheetSelection:ARGS_FOR_MULTIPLE_SELECTION"
-        private const val ARGS_APPLY_BUTTON_TEXT =
-            "SheetSelection:ARGS_APPLY_BUTTON_TEXT"
+        private const val ARGS_MULTIPLE_SELECTION_BUTTON_TEXT =
+            "SheetSelection:ARGS_MULTIPLE_SELECTION_BUTTON_TEXT"
         private const val ARGS_SHOW_CLOSE_BTN =
             "SheetSelection:ARGS_SHOW_CLOSE_BTN"
-        private const val ARGS_SHOW_RESET_BTN =
-            "SheetSelection:ARGS_SHOW_RESET_BTN"
-        private const val ARGS_SHOW_RESET_MODE =
-            "SheetSelection:ARGS_SHOW_RESET_MODE"
         private const val ARGS_TAG = "SheetSelection:ARGS_TAG"
 
         private const val STATE_PREV_STATE = "STATE:PREV_STATE"
@@ -456,5 +406,6 @@ class SheetSelection : BottomSheetDialogFragment() {
         private const val STICKY_BOTTOM_DISAPPEARING_ACCELERATE = 6
         private const val PEEK_HEIGHT_AUTO_RATIO_THRESHOLD = 1.1f
         private const val WIDE_SCREEN_PEEK_HEIGHT_RATIO = 0.85f
+        private const val EMPTY_TAG = ""
     }
 }

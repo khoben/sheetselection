@@ -8,8 +8,35 @@
 3. Survive on rotation
 4. and more little changes...
 
-## How to use
 ### [Sample app (apk)](https://github.com/khoben/sheetselection/releases/latest/download/sample.apk)
+
+## How to use
+```kotlin
+class MainActivity (or Fragment) : SheetSelectionListener {
+    showSheetSelection("MY_TAG") {
+        title("Sheet Selection")
+        items(List(25) { 
+            SheetSelectionItem("$it", "#$it") 
+        })
+        enableDraggableIndicator(true)
+        enableMultiSelection(true)
+        enableSearch(true)
+        enableCloseButton(true)
+        multiSelectionButtonText("Select")
+        searchNotFoundText("Empty")
+    }
+
+    override fun onSheetItemsSelected(event: SheetSelectionEvent) {
+        event.doIfMatches("MY_TAG") { selected ->
+            Toast.makeText(
+                this,
+                "Selected: ${selected.joinToString { it.value }}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+}
+```
 
 ## Screenshots
 <table>
@@ -32,6 +59,6 @@ repositories {
 Add the dependency
 ``` groovy
 dependencies {
-    implementation 'com.github.khoben:sheetselection:2.0.3'
+    implementation 'com.github.khoben:sheetselection:3.0.0'
 }
 ```

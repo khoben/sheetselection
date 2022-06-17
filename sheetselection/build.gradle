@@ -14,12 +14,8 @@ android {
     }
 
     buildTypes {
-        debug {
-            debuggable true
-        }
         release {
             minifyEnabled false
-            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -35,7 +31,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.khoben'
                 artifactId = 'sheetselection'
-                version = '2.0.1'
+                version = '3.0.0'
             }
         }
     }
@@ -43,5 +39,5 @@ afterEvaluate {
 
 dependencies {
     implementation "androidx.fragment:fragment-ktx:1.4.1"
-    implementation "com.google.android.material:material:1.6.0"
+    implementation "com.google.android.material:material:1.6.1"
 }

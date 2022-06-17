@@ -75,16 +75,6 @@ class SheetSelectionAdapter(
         }
     }
 
-    fun resetCheckedStates(@SheetSelection.ResetMode state: Int) {
-        val defaultCheckedState = (state == SheetSelection.ResetMode.SELECT_ALL)
-        currentList.forEachIndexed { index, it ->
-            if (it.isChecked != defaultCheckedState) {
-                it.isChecked = defaultCheckedState
-                notifyItemChanged(index)
-            }
-        }
-    }
-
     private fun internalUpdate(newList: List<SheetSelectionItem>) {
         val diffResult: DiffUtil.DiffResult =
             DiffUtil.calculateDiff(SelectionDiffCallback(currentList, newList), false)

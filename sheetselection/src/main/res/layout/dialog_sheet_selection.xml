@@ -45,13 +45,6 @@
                 android:layout_weight="1" />
 
             <ImageButton
-                android:id="@+id/buttonReset"
-                style="?attr/sheetSelection_buttonStyle"
-                android:src="@drawable/ic_restore"
-                android:visibility="gone"
-                tools:visibility="visible" />
-
-            <ImageButton
                 android:id="@+id/buttonSearch"
                 style="?attr/sheetSelection_buttonStyle"
                 android:src="@drawable/ic_search"

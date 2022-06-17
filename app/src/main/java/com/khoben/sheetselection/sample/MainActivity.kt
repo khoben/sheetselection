@@ -20,10 +20,10 @@ class MainActivity : AppCompatActivity(), SheetSelectionListener {
                 items(List(25) { SheetSelectionItem("$it", "#$it") })
                 enableDraggableIndicator(true)
                 enableMultiSelection(true)
-                enableResetButton(true, SheetSelection.ResetMode.SELECT_ALL)
                 enableSearch(true)
                 enableCloseButton(true)
                 searchNotFoundText("Empty")
+                multiSelectionButtonText("Select")
             }
         }
     }
