@@ -59,6 +59,6 @@ repositories {
 Add the dependency
 ``` groovy
 dependencies {
-    implementation 'com.github.khoben:sheetselection:3.0.1'
+    implementation 'com.github.khoben:sheetselection:3.0.2'
 }
 ```

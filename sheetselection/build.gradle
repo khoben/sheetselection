@@ -5,12 +5,12 @@ apply plugin: 'kotlin-parcelize'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "31.0.0"
+    compileSdkVersion 33
+    buildToolsVersion "33.0.0"
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 33
     }
 
     buildTypes {
@@ -31,13 +31,13 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.khoben'
                 artifactId = 'sheetselection'
-                version = '3.0.1'
+                version = '3.0.2'
             }
         }
     }
 }
 
 dependencies {
-    implementation "androidx.fragment:fragment-ktx:1.4.1"
-    implementation "com.google.android.material:material:1.6.1"
+    implementation "androidx.fragment:fragment-ktx:1.5.4"
+    implementation "com.google.android.material:material:1.7.0"
 }

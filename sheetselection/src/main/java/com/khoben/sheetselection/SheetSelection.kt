@@ -12,7 +12,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.*
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -30,6 +29,9 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     private var searchableState: Boolean = false
     private var previousSheetState: Int = STATE_COLLAPSED
+
+    // FrameLayout:@+id/design_bottom_sheet
+    private lateinit var designBottomSheet: View
 
     private lateinit var items: List<SheetSelectionItem>
     private lateinit var selectionAdapter: SheetSelectionAdapter
@@ -64,6 +66,8 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        designBottomSheet = binding.root.parent as View
 
         arguments?.let { args ->
 
@@ -161,25 +165,24 @@ class SheetSelection : BottomSheetDialogFragment() {
 
         with(requireDialog() as BottomSheetDialog) {
             behavior.peekHeight = calcBottomSheetPeekHeight()
-            // Initial sticky bottom placement
-            val bottomSheet: View = binding.root.parent as View
             val stickyButton: View = binding.doneButtonContainer
-            bottomSheet.post {
-                stickyButton.post {
-                    updateStickyButton(bottomSheet, stickyButton, 0f)
-                }
-            }
             if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED) == true) {
-                behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                behavior.addBottomSheetCallback(object : BottomSheetCallback() {
                     override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
                     override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                        updateStickyButton(
+                        updateBottomStickyView(
                             bottomSheet,
-                            binding.doneButtonContainer,
+                            stickyButton,
                             slideOffset
                         )
                     }
                 })
+                // Initial sticky bottom placement
+                designBottomSheet.post {
+                    stickyButton.post {
+                        updateBottomStickyView(designBottomSheet, stickyButton, 0f)
+                    }
+                }
             }
         }
     }
@@ -206,24 +209,24 @@ class SheetSelection : BottomSheetDialogFragment() {
         super.onDetach()
     }
 
-    private fun updateStickyButton(
-        bottomSheet: View,
-        stickyButton: View,
+    private fun updateBottomStickyView(
+        designBottomSheet: View,
+        stickyBottomView: View,
         slideOffset: Float
     ) {
-        val parentHeight: Float = (bottomSheet.parent as View).measuredHeight.toFloat()
-        stickyButton.y = if (slideOffset < 0) { // down
+        // CoordinatorLayout:@+id/coordinator height
+        val parentHeight: Float = (designBottomSheet.parent as View).measuredHeight.toFloat()
+        stickyBottomView.y = if (slideOffset < 0) { // down
             parentHeight -
-                    bottomSheet.top - (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset + 1) *
-                    stickyButton.measuredHeight
+                    designBottomSheet.top - (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset + 1) *
+                    stickyBottomView.measuredHeight
         } else { // up
-            parentHeight - bottomSheet.top - stickyButton.measuredHeight
+            parentHeight - designBottomSheet.top - stickyBottomView.measuredHeight
         }
     }
 
     private fun updateSheetHeight(height: Int) {
-        val view = binding.root.parent as View
-        view.updateLayoutParams { this.height = height }
+        designBottomSheet.updateLayoutParams { this.height = height }
     }
 
     private fun onItemSelected(item: SheetSelectionItem, position: Int) {
@@ -314,7 +317,7 @@ class SheetSelection : BottomSheetDialogFragment() {
         private var items: List<SheetSelectionItem> = emptyList()
 
         private var searchNotFoundText: String? = null
-        private var multiselectionButtonText: String? = null
+        private var multiSelectionButtonText: String? = null
 
         private var searchEnabled: Boolean = false
         private var draggableIndicatorEnabled: Boolean = false
@@ -355,7 +358,7 @@ class SheetSelection : BottomSheetDialogFragment() {
         }
 
         fun multiSelectionButtonText(text: String) = apply {
-            this.multiselectionButtonText = text
+            this.multiSelectionButtonText = text
         }
 
         fun enableCloseButton(enable: Boolean) = apply {
@@ -371,15 +374,13 @@ class SheetSelection : BottomSheetDialogFragment() {
                 putBoolean(ARGS_SEARCH_ENABLED, this@Builder.searchEnabled)
                 putString(ARGS_SEARCH_NOT_FOUND_TEXT, this@Builder.searchNotFoundText)
                 putBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, multipleSelectionEnabled)
-                putString(ARGS_MULTIPLE_SELECTION_BUTTON_TEXT, multiselectionButtonText)
+                putString(ARGS_MULTIPLE_SELECTION_BUTTON_TEXT, multiSelectionButtonText)
                 putBoolean(ARGS_SHOW_CLOSE_BTN, closeButtonEnabled)
                 putString(ARGS_TAG, this@Builder.sheetSelectionTag)
             }
         }
 
-        fun show(manager: FragmentManager) {
-            build().show(manager, TAG)
-        }
+        fun show(manager: FragmentManager) = build().show(manager, TAG)
     }
 
     companion object {
