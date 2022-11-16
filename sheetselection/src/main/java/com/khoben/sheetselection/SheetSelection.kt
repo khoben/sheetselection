@@ -2,11 +2,13 @@ package com.khoben.sheetselection
 
 import android.app.Dialog
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
@@ -40,12 +42,19 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return object : BottomSheetDialog(requireContext(), theme) {
-            override fun onBackPressed() {
-                if (searchableState) {
-                    exitSearchViewState()
-                } else {
-                    super.onBackPressed()
-                }
+
+            override fun onCreate(savedInstanceState: Bundle?) {
+                super.onCreate(savedInstanceState)
+                onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        if (searchableState) {
+                            exitSearchViewState()
+                        } else {
+                            isEnabled = false
+                            onBackPressedDispatcher.onBackPressed()
+                        }
+                    }
+                })
             }
         }
     }
@@ -73,7 +82,14 @@ class SheetSelection : BottomSheetDialogFragment() {
 
             sheetSelectionTag = args.getString(ARGS_TAG) ?: EMPTY_TAG
 
-            items = args.getParcelableArrayList(ARGS_ITEMS)!!
+            items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                args.getParcelableArrayList(
+                    ARGS_ITEMS,
+                    SheetSelectionItem::class.java
+                )!!
+            else
+                @Suppress("DEPRECATION")
+                args.getParcelableArrayList(ARGS_ITEMS)!!
 
             if (args.getBoolean(ARGS_SHOW_DRAGGED_INDICATOR)) {
                 binding.draggedIndicator.visibility = View.VISIBLE

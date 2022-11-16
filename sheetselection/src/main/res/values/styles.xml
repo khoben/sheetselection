@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.SheetSelection" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
+    <style name="Theme.SheetSelection" parent="@style/ThemeOverlay.Material3.BottomSheetDialog">
         <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="sheetSelection_titleStyle">@style/Widget.SheetSelection.Title</item>
         <item name="sheetSelection_itemStyle">@style/Widget.SheetSelection.Item</item>
@@ -74,7 +74,7 @@
         <item name="strokeWidth">0dp</item>
     </style>
 
-    <style name="Widget.SheetSelection.Sticky.Button" parent="@style/Widget.MaterialComponents.Button.TextButton">
+    <style name="Widget.SheetSelection.Sticky.Button" parent="@style/Widget.Material3.Button.TextButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_gravity">center_horizontal</item>
