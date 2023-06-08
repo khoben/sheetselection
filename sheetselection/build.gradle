@@ -31,13 +31,13 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.khoben'
                 artifactId = 'sheetselection'
-                version = '3.0.3'
+                version = '3.0.4'
             }
         }
     }
 }
 
 dependencies {
-    implementation "androidx.fragment:fragment-ktx:1.5.4"
-    implementation "com.google.android.material:material:1.7.0"
+    implementation "androidx.fragment:fragment-ktx:1.6.0"
+    implementation "com.google.android.material:material:1.9.0"
 }

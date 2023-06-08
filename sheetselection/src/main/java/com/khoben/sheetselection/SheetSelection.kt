@@ -2,7 +2,6 @@ package com.khoben.sheetselection
 
 import android.app.Dialog
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -82,14 +81,13 @@ class SheetSelection : BottomSheetDialogFragment() {
 
             sheetSelectionTag = args.getString(ARGS_TAG) ?: EMPTY_TAG
 
-            items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                args.getParcelableArrayList(
-                    ARGS_ITEMS,
-                    SheetSelectionItem::class.java
-                )!!
-            else
-                @Suppress("DEPRECATION")
-                args.getParcelableArrayList(ARGS_ITEMS)!!
+            /**
+             * Keep using deprecated getParcelableArrayList (on Android 13+)
+             * while getParcelableArrayList(String,Class) throws NPE,
+             * see: https://issuetracker.google.com/issues/240585930
+             */
+            @Suppress("DEPRECATION")
+            items = args.getParcelableArrayList(ARGS_ITEMS)!!
 
             if (args.getBoolean(ARGS_SHOW_DRAGGED_INDICATOR)) {
                 binding.draggedIndicator.visibility = View.VISIBLE
