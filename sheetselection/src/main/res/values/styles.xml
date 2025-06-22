@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.SheetSelection" parent="@style/ThemeOverlay.Material3.BottomSheetDialog">
+    <style name="Theme.SheetSelection" parent="Theme.SheetSelection.Base" />
+
+    <style name="Theme.SheetSelection.Base" parent="@style/ThemeOverlay.Material3.BottomSheetDialog">
         <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="sheetSelection_titleStyle">@style/Widget.SheetSelection.Title</item>
         <item name="sheetSelection_itemStyle">@style/Widget.SheetSelection.Item</item>
@@ -28,6 +30,8 @@
         <item name="android:paddingEnd">16dp</item>
         <item name="android:paddingTop">0dp</item>
         <item name="android:paddingBottom">0dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
         <item name="android:drawablePadding">16dp</item>
         <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body1</item>
         <item name="android:gravity">center_vertical</item>
@@ -39,7 +43,7 @@
         <item name="android:maxHeight">4dp</item>
         <item name="android:minHeight">4dp</item>
         <item name="android:layout_marginTop">8dp</item>
-        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:backgroundTint">?attr/sheetSelection_indicatorColor</item>
         <item name="android:alpha">0.24</item>

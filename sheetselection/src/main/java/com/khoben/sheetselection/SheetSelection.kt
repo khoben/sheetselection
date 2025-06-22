@@ -10,10 +10,16 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.BundleCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetBehavior.*
+import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
+import com.google.android.material.bottomsheet.BottomSheetBehavior.PEEK_HEIGHT_AUTO
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.khoben.sheetselection.databinding.DialogSheetSelectionBinding
@@ -32,7 +38,7 @@ class SheetSelection : BottomSheetDialogFragment() {
     private var previousSheetState: Int = STATE_COLLAPSED
 
     // FrameLayout:@+id/design_bottom_sheet
-    private lateinit var designBottomSheet: View
+    private lateinit var bottomSheetLayout: View
 
     private lateinit var items: List<SheetSelectionItem>
     private lateinit var selectionAdapter: SheetSelectionAdapter
@@ -55,6 +61,13 @@ class SheetSelection : BottomSheetDialogFragment() {
                     }
                 })
             }
+        }.apply {
+            arguments?.let { args ->
+                BundleCompat.getParcelable(args, ARGS_EDGE_TO_EDGE, EdgeToEdgeConfig::class.java)
+                    ?.let { edgeToEdge ->
+                        window?.enableEdgeToEdge(edgeToEdge)
+                    }
+            }
         }
     }
 
@@ -75,19 +88,14 @@ class SheetSelection : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        designBottomSheet = binding.root.parent as View
+        bottomSheetLayout = binding.root.parent as View
 
         arguments?.let { args ->
 
             sheetSelectionTag = args.getString(ARGS_TAG) ?: EMPTY_TAG
-
-            /**
-             * Keep using deprecated getParcelableArrayList (on Android 13+)
-             * while getParcelableArrayList(String,Class) throws NPE,
-             * see: https://issuetracker.google.com/issues/240585930
-             */
-            @Suppress("DEPRECATION")
-            items = args.getParcelableArrayList(ARGS_ITEMS)!!
+            items = BundleCompat.getParcelableArrayList(
+                args, ARGS_ITEMS, SheetSelectionItem::class.java
+            ) ?: emptyList()
 
             if (args.getBoolean(ARGS_SHOW_DRAGGED_INDICATOR)) {
                 binding.draggedIndicator.visibility = View.VISIBLE
@@ -182,19 +190,23 @@ class SheetSelection : BottomSheetDialogFragment() {
             val stickyButton: View = binding.doneButtonContainer
             if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED) == true) {
                 behavior.addBottomSheetCallback(object : BottomSheetCallback() {
-                    override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
+                    override fun onStateChanged(bottomSheet: View, newState: Int) {
+                        updateBottomStickyButton(
+                            bottomSheet, stickyButton, 0f
+                        )
+                    }
                     override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                        updateBottomStickyView(
+                        updateBottomStickyButton(
                             bottomSheet,
                             stickyButton,
-                            slideOffset
+                            slideOffset,
                         )
                     }
                 })
                 // Initial sticky bottom placement
-                designBottomSheet.post {
-                    stickyButton.post {
-                        updateBottomStickyView(designBottomSheet, stickyButton, 0f)
+                stickyButton.post {
+                    bottomSheetLayout.post {
+                        updateBottomStickyButton(bottomSheetLayout, stickyButton, 0f)
                     }
                 }
             }
@@ -223,24 +235,19 @@ class SheetSelection : BottomSheetDialogFragment() {
         super.onDetach()
     }
 
-    private fun updateBottomStickyView(
-        designBottomSheet: View,
-        stickyBottomView: View,
+    private fun updateBottomStickyButton(
+        bottomSheet: View, stickyButton: View,
         slideOffset: Float
     ) {
         // CoordinatorLayout:@+id/coordinator height
-        val parentHeight: Float = (designBottomSheet.parent as View).measuredHeight.toFloat()
-        stickyBottomView.y = if (slideOffset < 0) { // down
-            parentHeight -
-                    designBottomSheet.top - (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset + 1) *
-                    stickyBottomView.measuredHeight
-        } else { // up
-            parentHeight - designBottomSheet.top - stickyBottomView.measuredHeight
-        }
+        val parentHeight: Float = (bottomSheet.parent as View).height.toFloat()
+        stickyButton.translationY =
+            parentHeight - bottomSheet.bottom - if (slideOffset < 0) stickyButton.height * (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset)
+            else 0f
     }
 
     private fun updateSheetHeight(height: Int) {
-        designBottomSheet.updateLayoutParams { this.height = height }
+        bottomSheetLayout.updateLayoutParams { this.height = height }
     }
 
     private fun onItemSelected(item: SheetSelectionItem, position: Int) {
@@ -338,6 +345,8 @@ class SheetSelection : BottomSheetDialogFragment() {
         private var closeButtonEnabled: Boolean = false
         private var multipleSelectionEnabled: Boolean = false
 
+        private var edgeToEdgeConfig: EdgeToEdgeConfig? = null
+
         fun theme(@StyleRes themeId: Int) = apply {
             this.themeId = themeId
         }
@@ -379,6 +388,10 @@ class SheetSelection : BottomSheetDialogFragment() {
             this.closeButtonEnabled = enable
         }
 
+        fun edgeToEdge(edgeToEdgeConfig: EdgeToEdgeConfig = EdgeToEdgeConfig()) = apply {
+            this.edgeToEdgeConfig = edgeToEdgeConfig
+        }
+
         fun build() = SheetSelection().apply {
             arguments = Bundle().apply {
                 putInt(ARGS_THEME, this@Builder.themeId)
@@ -387,10 +400,13 @@ class SheetSelection : BottomSheetDialogFragment() {
                 putBoolean(ARGS_SHOW_DRAGGED_INDICATOR, this@Builder.draggableIndicatorEnabled)
                 putBoolean(ARGS_SEARCH_ENABLED, this@Builder.searchEnabled)
                 putString(ARGS_SEARCH_NOT_FOUND_TEXT, this@Builder.searchNotFoundText)
-                putBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, multipleSelectionEnabled)
-                putString(ARGS_MULTIPLE_SELECTION_BUTTON_TEXT, multiSelectionButtonText)
-                putBoolean(ARGS_SHOW_CLOSE_BTN, closeButtonEnabled)
+                putBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, this@Builder.multipleSelectionEnabled)
+                putString(
+                    ARGS_MULTIPLE_SELECTION_BUTTON_TEXT, this@Builder.multiSelectionButtonText
+                )
+                putBoolean(ARGS_SHOW_CLOSE_BTN, this@Builder.closeButtonEnabled)
                 putString(ARGS_TAG, this@Builder.sheetSelectionTag)
+                putParcelable(ARGS_EDGE_TO_EDGE, this@Builder.edgeToEdgeConfig)
             }
         }
 
@@ -411,6 +427,7 @@ class SheetSelection : BottomSheetDialogFragment() {
             "SheetSelection:ARGS_MULTIPLE_SELECTION_BUTTON_TEXT"
         private const val ARGS_SHOW_CLOSE_BTN =
             "SheetSelection:ARGS_SHOW_CLOSE_BTN"
+        private const val ARGS_EDGE_TO_EDGE = "SheetSelection:EDGE_TO_EDGE"
         private const val ARGS_TAG = "SheetSelection:ARGS_TAG"
 
         private const val STATE_PREV_STATE = "STATE:PREV_STATE"

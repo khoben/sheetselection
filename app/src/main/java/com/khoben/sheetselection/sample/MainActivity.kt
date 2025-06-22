@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity(), SheetSelectionListener {
                 enableCloseButton(true)
                 searchNotFoundText("Empty")
                 multiSelectionButtonText("Select")
+                edgeToEdge()
             }
         }
     }

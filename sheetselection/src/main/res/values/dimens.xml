@@ -4,6 +4,7 @@
     <dimen name="sticky_button_container_elevation">4dp</dimen>
     <!-- To match searchView's close button   -->
     <dimen name="header_margin_end">4dp</dimen>
-    <dimen name="header_container_margin_top">4dp</dimen>
+    <dimen name="header_container_margin_top">6dp</dimen>
     <dimen name="header_container_margin_bottom">4dp</dimen>
+    <dimen name="list_bottom_padding">12dp</dimen>
 </resources>

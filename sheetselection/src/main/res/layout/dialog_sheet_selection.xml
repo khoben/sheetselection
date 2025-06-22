@@ -87,7 +87,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:itemCount="10"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/list_bottom_padding"
+            android:scrollbars="vertical"
+            tools:itemCount="16"
             tools:listitem="@layout/row_selection_item" />
 
     </FrameLayout>

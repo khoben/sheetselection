@@ -24,6 +24,7 @@ class MainActivity (or Fragment) : SheetSelectionListener {
         enableCloseButton(true)
         multiSelectionButtonText("Select")
         searchNotFoundText("Empty")
+        edgeToEdge()
     }
 
     override fun onSheetItemsSelected(event: SheetSelectionEvent) {
@@ -59,6 +60,6 @@ repositories {
 Add the dependency
 ``` groovy
 dependencies {
-    implementation 'com.github.khoben:sheetselection:3.0.4'
+    implementation 'com.github.khoben:sheetselection:3.1.0'
 }
 ```

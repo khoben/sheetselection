@@ -119,7 +119,12 @@ class SheetSelectionAdapter(
                     itemView.context,
                     R.drawable.ic_check
                 )?.apply {
-                    setTint(getAttrColor(itemView.context, R.attr.colorPrimary))
+                    setTint(
+                        getAttrColor(
+                            itemView.context,
+                            com.google.android.material.R.attr.colorPrimary
+                        )
+                    )
                 } else null
 
             binding.textViewItem.setCompoundDrawablesWithIntrinsicBounds(
