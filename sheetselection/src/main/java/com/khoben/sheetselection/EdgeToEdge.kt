@@ -122,13 +122,16 @@ class WindowSystemBarStyle private constructor(
          * @param detectDarkMode Optional. Detects whether UI currently uses dark mode or not. The
          * default implementation can detect any of the standard dark mode features from the
          * platform, appcompat, and Jetpack Compose.
+         *
+         * **!! Please annotate your custom implementation** with `@JvmSerializableLambda`.
+         * This will allow serialization to work with Kotlin 2.0+.
          */
         @JvmStatic
         @JvmOverloads
         fun auto(
             @ColorInt lightScrim: Int,
             @ColorInt darkScrim: Int,
-            detectDarkMode: (Resources) -> Boolean = { resources ->
+            detectDarkMode: (Resources) -> Boolean = @JvmSerializableLambda { resources ->
                 (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
                         Configuration.UI_MODE_NIGHT_YES
             }
@@ -154,7 +157,7 @@ class WindowSystemBarStyle private constructor(
                 lightScrim = scrim,
                 darkScrim = scrim,
                 nightMode = UiModeManager.MODE_NIGHT_YES,
-                detectDarkMode = { _ -> true }
+                detectDarkMode = @JvmSerializableLambda { _ -> true }
             )
         }
 
@@ -173,7 +176,7 @@ class WindowSystemBarStyle private constructor(
                 lightScrim = scrim,
                 darkScrim = darkScrim,
                 nightMode = UiModeManager.MODE_NIGHT_NO,
-                detectDarkMode = { _ -> false }
+                detectDarkMode = @JvmSerializableLambda { _ -> false }
             )
         }
     }
