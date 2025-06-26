@@ -242,8 +242,10 @@ class SheetSelection : BottomSheetDialogFragment() {
         // CoordinatorLayout:@+id/coordinator height
         val parentHeight: Float = (bottomSheet.parent as View).height.toFloat()
         stickyButton.translationY =
-            parentHeight - bottomSheet.bottom - if (slideOffset < 0) stickyButton.height * (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset)
-            else 0f
+            parentHeight - bottomSheet.bottom - (if (slideOffset < 0)
+                stickyButton.height * (STICKY_BOTTOM_DISAPPEARING_ACCELERATE * slideOffset)
+            else
+                0f)
     }
 
     private fun updateSheetHeight(height: Int) {

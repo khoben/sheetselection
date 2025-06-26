@@ -38,7 +38,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.khoben'
                 artifactId = 'sheetselection'
-                version = '3.1.0'
+                version = project['version']
             }
         }
     }

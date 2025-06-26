@@ -10,6 +10,21 @@
 
 ### [Sample app (apk)](https://github.com/khoben/sheetselection/releases/latest/download/sample.apk)
 
+## Installation
+Add to your **root** `build.gradle` at the end of repositories:
+``` groovy
+repositories {
+    ..
+    maven { url 'https://jitpack.io' }
+}
+```
+Add the dependency (*latest version* is [![Jitpack SheetSelection](https://jitpack.io/v/khoben/sheetselection.svg)](https://jitpack.io/#khoben/sheetselection))
+``` groovy
+dependencies {
+    implementation 'com.github.khoben:sheetselection:<latest_version>'
+}
+```
+
 ## How to use
 ```kotlin
 class MainActivity (or Fragment) : SheetSelectionListener {
@@ -48,18 +63,3 @@ class MainActivity (or Fragment) : SheetSelectionListener {
         <p align="center"><img height="400px" src="./README.md-images/2.png"></p>
     </td>
 </table>
-
-## Installation
-Add it in your **root** `build.gradle` at the end of repositories:
-``` groovy
-repositories {
-    ..
-    maven { url 'https://jitpack.io' }
-}
-```
-Add the dependency
-``` groovy
-dependencies {
-    implementation 'com.github.khoben:sheetselection:3.1.0'
-}
-```
