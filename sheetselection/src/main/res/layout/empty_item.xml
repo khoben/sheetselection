@@ -6,6 +6,6 @@
 
     <TextView
         android:id="@+id/emptyResultView"
-        style="@style/Widget.SheetSelection.EmptyView"
+        style="?attr/sheetSelection_emptyViewStyle"
         tools:text="Nothing" />
 </FrameLayout>

@@ -3,12 +3,15 @@
 
     <style name="Theme.SheetSelection.Base">
         <item name="android:windowSoftInputMode">adjustResize</item>
-        <item name="sheetSelection_titleStyle">@style/Widget.SheetSelection.Title</item>
-        <item name="sheetSelection_itemStyle">@style/Widget.SheetSelection.Item</item>
-        <item name="sheetSelection_buttonStyle">@style/Widget.SheetSelection.Button</item>
-        <item name="sheetSelection_buttonDoneText">@string/apply</item>
         <item name="sheetSelection_indicatorStyle">@style/Widget.SheetSelection.Indicator</item>
-        <item name="sheetSelection_indicatorColor">?attr/colorPrimary</item>
+        <item name="sheetSelection_titleStyle">@style/Widget.SheetSelection.Title</item>
+        <item name="sheetSelection_listItemStyle">@style/Widget.SheetSelection.Item</item>
+        <item name="sheetSelection_iconButtonStyle">@style/Widget.SheetSelection.IconButton</item>
+        <item name="sheetSelection_stickyBottomButtonText">@string/apply</item>
+        <item name="sheetSelection_stickyBottomButtonStyle">
+            @style/Widget.SheetSelection.StickyBottomButton
+        </item>
+        <item name="sheetSelection_emptyViewStyle">@style/Widget.SheetSelection.EmptyView</item>
     </style>
 
     <style name="Theme.SheetSelection" parent="Theme.SheetSelection.Base" />
@@ -35,6 +38,7 @@
         <item name="android:drawablePadding">16dp</item>
         <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body1</item>
         <item name="android:gravity">center_vertical</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
     <style name="Widget.SheetSelection.Indicator" parent="">
@@ -44,12 +48,12 @@
         <item name="android:minHeight">4dp</item>
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:layout_gravity">center_horizontal</item>
-        <item name="android:backgroundTint">?attr/sheetSelection_indicatorColor</item>
+        <item name="android:backgroundTint">?attr/colorPrimary</item>
         <item name="android:alpha">0.24</item>
         <item name="android:background">@drawable/bg_round</item>
     </style>
 
-    <style name="Widget.SheetSelection.Button" parent="">
+    <style name="Widget.SheetSelection.IconButton" parent="">
         <item name="android:layout_width">@dimen/icon_button_size</item>
         <item name="android:layout_height">@dimen/icon_button_size</item>
         <item name="android:layout_gravity">center_vertical</item>
@@ -75,7 +79,6 @@
         <item name="android:insetRight">0dp</item>
         <item name="android:padding">0dp</item>
         <item name="cornerRadius">0dp</item>
-        <item name="android:text">?attr/sheetSelection_buttonDoneText</item>
         <item name="android:textAllCaps">true</item>
     </style>
 

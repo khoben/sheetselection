@@ -47,14 +47,14 @@
 
             <ImageButton
                 android:id="@+id/buttonSearch"
-                style="?attr/sheetSelection_buttonStyle"
+                style="?attr/sheetSelection_iconButtonStyle"
                 android:src="@drawable/ic_search"
                 android:visibility="gone"
                 tools:visibility="visible" />
 
             <ImageButton
                 android:id="@+id/buttonClose"
-                style="?attr/sheetSelection_buttonStyle"
+                style="?attr/sheetSelection_iconButtonStyle"
                 android:src="@drawable/ic_close"
                 android:visibility="gone"
                 tools:visibility="visible" />
@@ -98,8 +98,9 @@
     <!-- Sticky button -->
     <Button
         android:id="@+id/stickyBottomButton"
-        style="@style/Widget.SheetSelection.StickyBottomButton"
+        style="?attr/sheetSelection_stickyBottomButtonStyle"
         android:visibility="gone"
+        android:text="?attr/sheetSelection_stickyBottomButtonText"
         tools:visibility="visible"/>
 
 </LinearLayout>

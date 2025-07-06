@@ -2,11 +2,12 @@
 <resources>
     <declare-styleable name="SheetSelection">
         <attr name="sheetSelectionTheme" format="reference" />
-        <attr name="sheetSelection_titleStyle" format="reference" />
-        <attr name="sheetSelection_itemStyle" format="reference" />
         <attr name="sheetSelection_indicatorStyle" format="reference" />
-        <attr name="sheetSelection_buttonStyle" format="reference" />
-        <attr name="sheetSelection_buttonDoneText" format="reference" />
-        <attr name="sheetSelection_indicatorColor" format="color" />
+        <attr name="sheetSelection_titleStyle" format="reference" />
+        <attr name="sheetSelection_iconButtonStyle" format="reference" />
+        <attr name="sheetSelection_listItemStyle" format="reference" />
+        <attr name="sheetSelection_stickyBottomButtonStyle" format="reference" />
+        <attr name="sheetSelection_stickyBottomButtonText" format="reference" />
+        <attr name="sheetSelection_emptyViewStyle" format="reference" />
     </declare-styleable>
 </resources>
