@@ -2,6 +2,7 @@ package com.khoben.sheetselection
 
 import android.app.Dialog
 import android.content.Context
+import android.content.res.Resources.Theme
 import android.os.Bundle
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
@@ -78,10 +79,15 @@ class SheetSelection : BottomSheetDialogFragment() {
     ): View? {
         _binding = DialogSheetSelectionBinding.inflate(
             LayoutInflater.from(
-                ContextThemeWrapper(
+                // Get attributes from app context theme and fallback to `R.style.Theme_SheetSelection`
+                object : ContextThemeWrapper(
                     context,
                     arguments?.getInt(ARGS_THEME) ?: R.style.Theme_SheetSelection
-                )
+                ) {
+                    override fun onApplyThemeResource(theme: Theme, resId: Int, first: Boolean) {
+                        theme.applyStyle(resId, false)
+                    }
+                }
             ), container, false
         )
         return _binding?.root
