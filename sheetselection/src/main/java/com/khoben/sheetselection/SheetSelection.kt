@@ -3,6 +3,7 @@ package com.khoben.sheetselection
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,14 +37,13 @@ class SheetSelection : BottomSheetDialogFragment() {
 
     private var searchableState: Boolean = false
     private var previousSheetState: Int = STATE_COLLAPSED
+    private var multiSelectionEnabled: Boolean = false
+
+    private var items: List<SheetSelectionItem> = emptyList()
+    private lateinit var selectionAdapter: SheetSelectionAdapter
 
     // FrameLayout:@+id/design_bottom_sheet
     private lateinit var bottomSheetLayout: View
-
-    private lateinit var items: List<SheetSelectionItem>
-    private lateinit var selectionAdapter: SheetSelectionAdapter
-
-    override fun getTheme(): Int = arguments?.getInt(ARGS_THEME) ?: super.getTheme()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return object : BottomSheetDialog(requireContext(), theme) {
@@ -76,7 +76,14 @@ class SheetSelection : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = DialogSheetSelectionBinding.inflate(inflater, container, false)
+        _binding = DialogSheetSelectionBinding.inflate(
+            LayoutInflater.from(
+                ContextThemeWrapper(
+                    context,
+                    arguments?.getInt(ARGS_THEME) ?: R.style.Theme_SheetSelection
+                )
+            ), container, false
+        )
         return _binding?.root
     }
 
@@ -102,10 +109,11 @@ class SheetSelection : BottomSheetDialogFragment() {
             }
 
             if (args.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED)) {
-                binding.doneButtonContainer.visibility = View.VISIBLE
-                binding.doneButton.text =
+                multiSelectionEnabled = true
+                binding.stickyBottomButton.visibility = View.VISIBLE
+                binding.stickyBottomButton.text =
                     args.getString(ARGS_MULTIPLE_SELECTION_BUTTON_TEXT, getString(R.string.apply))
-                binding.doneButtonContainer.setOnClickListener {
+                binding.stickyBottomButton.setOnClickListener {
                     listener.onSheetItemsSelected(
                         SheetSelectionEvent(
                             sheetSelectionTag,
@@ -187,15 +195,17 @@ class SheetSelection : BottomSheetDialogFragment() {
 
         with(requireDialog() as BottomSheetDialog) {
             behavior.peekHeight = calcBottomSheetPeekHeight()
-            val stickyButton: View = binding.doneButtonContainer
-            if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED) == true) {
+            if (multiSelectionEnabled) {
+                val stickyButton: View = binding.stickyBottomButton
                 behavior.addBottomSheetCallback(object : BottomSheetCallback() {
+                    private var lastSlideOffset = 0f
                     override fun onStateChanged(bottomSheet: View, newState: Int) {
                         updateBottomStickyButton(
-                            bottomSheet, stickyButton, 0f
+                            bottomSheet, stickyButton, lastSlideOffset
                         )
                     }
                     override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                        lastSlideOffset = slideOffset
                         updateBottomStickyButton(
                             bottomSheet,
                             stickyButton,
@@ -253,19 +263,20 @@ class SheetSelection : BottomSheetDialogFragment() {
     }
 
     private fun onItemSelected(item: SheetSelectionItem, position: Int) {
-        if (arguments?.getBoolean(ARGS_MULTIPLE_SELECTION_ENABLED, false) == true) {
+        if (multiSelectionEnabled) {
             item.isChecked = !item.isChecked
             selectionAdapter.notifyItemChanged(position)
-        } else {
-            items.forEach { selectionItem ->
-                selectionItem.isChecked = false
-            }
-            item.isChecked = true
-            listener.onSheetItemsSelected(
-                SheetSelectionEvent(sheetSelectionTag, listOf(item), items)
-            )
-            dismiss()
+            return
         }
+
+        items.forEach { selectionItem ->
+            selectionItem.isChecked = false
+        }
+        item.isChecked = true
+        listener.onSheetItemsSelected(
+            SheetSelectionEvent(sheetSelectionTag, listOf(item), items)
+        )
+        dismiss()
     }
 
     private fun enterSearchViewState() {

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.SheetSelection" parent="Theme.SheetSelection.Base" />
-
-    <style name="Theme.SheetSelection.Base" parent="@style/ThemeOverlay.Material3.BottomSheetDialog">
+    <style name="Theme.SheetSelection.Base">
         <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="sheetSelection_titleStyle">@style/Widget.SheetSelection.Title</item>
         <item name="sheetSelection_itemStyle">@style/Widget.SheetSelection.Item</item>
@@ -13,7 +11,9 @@
         <item name="sheetSelection_indicatorColor">?attr/colorPrimary</item>
     </style>
 
-    <style name="Widget.SheetSelection.Title" parent="@style/Widget.MaterialComponents.TextView">
+    <style name="Theme.SheetSelection" parent="Theme.SheetSelection.Base" />
+
+    <style name="Widget.SheetSelection.Title" parent="">
         <item name="android:maxHeight">48dp</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:layout_marginStart">16dp</item>
@@ -23,7 +23,7 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="Widget.SheetSelection.Item" parent="@style/Widget.MaterialComponents.TextView">
+    <style name="Widget.SheetSelection.Item" parent="">
         <item name="android:maxHeight">48dp</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:paddingStart">16dp</item>
@@ -37,13 +37,12 @@
         <item name="android:gravity">center_vertical</item>
     </style>
 
-    <style name="Widget.SheetSelection.Indicator" parent="@style/Widget.MaterialComponents.CardView">
+    <style name="Widget.SheetSelection.Indicator" parent="">
         <item name="android:maxWidth">32dp</item>
         <item name="android:minWidth">32dp</item>
         <item name="android:maxHeight">4dp</item>
         <item name="android:minHeight">4dp</item>
         <item name="android:layout_marginTop">8dp</item>
-        <item name="android:layout_marginBottom">2dp</item>
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:backgroundTint">?attr/sheetSelection_indicatorColor</item>
         <item name="android:alpha">0.24</item>
@@ -67,24 +66,17 @@
         <item name="drawableTopCompat">@drawable/ic_nothing</item>
     </style>
 
-    <style name="Widget.SheetSelection.Sticky" parent="">
+    <style name="Widget.SheetSelection.StickyBottomButton" parent="">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:clickable">true</item>
-        <item name="android:focusable">true</item>
-        <item name="cardCornerRadius">0dp</item>
-        <item name="cardElevation">@dimen/sticky_button_container_elevation</item>
-        <item name="strokeColor">@android:color/transparent</item>
-        <item name="strokeWidth">0dp</item>
-    </style>
-
-    <style name="Widget.SheetSelection.Sticky.Button" parent="@style/Widget.Material3.Button.TextButton">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_gravity">center_horizontal</item>
-        <item name="android:clickable">false</item>
-        <item name="android:focusable">false</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:padding">0dp</item>
+        <item name="cornerRadius">0dp</item>
         <item name="android:text">?attr/sheetSelection_buttonDoneText</item>
         <item name="android:textAllCaps">true</item>
     </style>
+
 </resources>

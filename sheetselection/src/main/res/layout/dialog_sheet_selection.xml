@@ -95,16 +95,11 @@
 
     </FrameLayout>
 
-    <!-- Sticky button layout -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/doneButtonContainer"
-        style="@style/Widget.SheetSelection.Sticky"
+    <!-- Sticky button -->
+    <Button
+        android:id="@+id/stickyBottomButton"
+        style="@style/Widget.SheetSelection.StickyBottomButton"
         android:visibility="gone"
-        tools:visibility="visible">
-
-        <TextView
-            android:id="@+id/doneButton"
-            style="@style/Widget.SheetSelection.Sticky.Button" />
-    </com.google.android.material.card.MaterialCardView>
+        tools:visibility="visible"/>
 
 </LinearLayout>
